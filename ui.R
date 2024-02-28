@@ -11,6 +11,11 @@ ui <-
             "Precipitation" = "prec")
           ),
         selectInput(
+          "quant", "Quantity",
+          c("Climatology" = "climate",
+            "Change" = "change")
+        ),
+        selectInput(
           "scen", "Scenario",
           c("SSP1" = "ssp1",
             "SSP2" = "ssp2",
