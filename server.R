@@ -18,6 +18,8 @@ server <- function(input, output) {
         if (season_subset != "year") r <- r[[which(format(dats, "%m") %in% season_subset)]]
       
         r <- mean(r)
+        
+        r <- mask(r, dun)
         setMinMax(r)
         
         pal <- map_cols_cmip_fun(indic = input$param, domain = minmax(r))

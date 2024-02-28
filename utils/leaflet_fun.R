@@ -29,7 +29,7 @@ leaflet_fun <- function() {
     #     group = "Județe") |>
     addPolygons(
       data = dun,
-      stroke = TRUE,color = "yellow",opacity = 1,
+      stroke = TRUE,color = "black",opacity = 1,  fillOpacity = 0,
       fillColor =  "#444444", weight = 1, smoothFactor = 0.5,
       options = pathOptions(pane = "danube"),
       group = "Danube") |>
