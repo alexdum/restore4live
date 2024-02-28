@@ -8,7 +8,7 @@ ui <-
           c("Mean temperature" = "tas",
             "Maximum temperature" = "tasmax",
             "Minimum temperature" = "tasmin",
-            "Precipitation" = "prec")
+            "Precipitation" = "pr")
           ),
         selectInput(
           "quant", "Quantity",
@@ -17,7 +17,8 @@ ui <-
         ),
         selectInput(
           "scen", "Scenario",
-          c("SSP1" = "ssp1",
+          c("Historical" = "hist",
+            "SSP1" = "ssp1",
             "SSP2" = "ssp2",
             "SSP3" = "ssp3",
             "SSP5" = "ssp5")
