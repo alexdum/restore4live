@@ -16,7 +16,7 @@ server <- function(input, output) {
         
         pal <- map_cols_cmip_fun(indic = input$param, domain = minmax(r))
         
-        list(r = r, pal = pal, min_max = minmax(r))
+        list(r = r, pal = pal, min_max = minmax(r), opacy = input$transp)
         
     }) 
     
@@ -36,17 +36,17 @@ server <- function(input, output) {
         r <- data_sel()$r
         pal <- data_sel()$pal
         min_max <- data_sel()$min_max
+        opacy <- data_sel()$opacy
         leafletProxy("map") |>
-            addRasterImage(r, opacity = 0.8, color = pal$pal) |>
+            clearImages() |>
+            addRasterImage(r, opacity = opacy, color = pal$pal) |>
             clearControls() |>
             addLegend(
                 title = pal$tit_leg,
                 position = "bottomright",
+                opacity = opacy,
                 pal = pal$pal_rev, values = min_max,
-                opacity = 1,
                 labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)))
-        
-        
     })
     
 }

@@ -28,6 +28,12 @@ ui <-
           label = "Season",
           choices = select_seas,
           selected =  select_seas[17]
+        ),
+        
+        sliderInput(
+          "transp", "Transparency",
+          min = 0, max = 1, ticks = F,
+          value = 0.8, step = 0.1,
         )
       ),
       # Show results
