@@ -19,8 +19,8 @@ map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
       
     } else {
       df.col <- data.frame(
-        cols = c(rev(colintBlues(8)),colintReds(9)), 
-        vals = seq(-4,4, 0.5)
+        cols = c(rev(colintBlues(12)),colintReds(13)), 
+        vals = seq(-6,6, 0.5)
       )
       leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "°C","</html>")
     }
