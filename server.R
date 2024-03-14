@@ -98,5 +98,20 @@ server <- function(input, output) {
         labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)))
   })
   
+  # functie leaflet de start
+  output$map_titl <- renderText({
+    param <- params_def$parm[params_def$input %in% input$param]
+    season <- names(select_seas[select_seas %in% input$season])
+    
+    if (input$quant %in% "climate") {
+      paste(param, season, toupper(input$scen), " - multiannual mean", input$period_climate) 
+    } else {
+      paste(param, season, toupper(input$scen), " - change in multiannual mean", input$period_change[2], "vs.",  input$period_change[1]) 
+    }
+    
+    
+    
+  })
+  
 }
 
