@@ -52,6 +52,7 @@ ui <-
           value = 0.8, step = 0.1)),
       # Show results
       card(
+        card_header(textOutput("map_titl")),
         full_screen = T,
         leafletOutput("map")
       )
