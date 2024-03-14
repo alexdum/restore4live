@@ -16,3 +16,6 @@ dun <- st_read("www/data/shps/DRBMP2015_DRBD.gpkg", quiet = T)
 
 select_seas <- read.csv("www/data/tabs/select_seas.csv")
 select_seas <- setNames(select_seas$choice, select_seas$parameter)
+
+# definitie parametri
+params_def <- read.csv("www/data/tabs/params_clim.csv")
