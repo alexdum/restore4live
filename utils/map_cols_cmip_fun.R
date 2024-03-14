@@ -1,24 +1,52 @@
 cols_tas <- c("#F7FCFD","#EBF4F8","#E0ECF4","#CFDFED","#BFD3E6","#AEC7E0","#9EBCDA","#95A9D0","#8C96C6","#8C80BB", "#8C6BB1", "#8A56A7","#88419D","#0000ff","#0049ff","#0072ff","#00a3ff","#00ccff","#00e5ff","#00ffff","#007700","#009900","#00bb00","#00dd00","#00ff00","#7fff00","#cfff00","#ffff00","#ffe500","#ffcc00","#ffad00","#ff9900","#ff7f00","#FF4E00","#F23A00","#E42700","#D81300","#CB0000","#A62137","#9D3673","#813986","#532B6E")
 colint_pr <- colorRampPalette(brewer.pal(9,"BuPu"),interpolate = "linear") 
+colintYlOrRd <- colorRampPalette( brewer.pal(9,"YlOrRd"),interpolate = "linear")
+colintRdYlBu <- colorRampPalette(brewer.pal(10,"RdYlBu"),interpolate = "linear")
+colintBlues <- colorRampPalette(brewer.pal(9,"Blues"), interpolate = "linear")
+colintReds <- colorRampPalette(brewer.pal(9,"Reds"), interpolate = "linear")
+colintBrBG <- colorRampPalette(brewer.pal(11,"BrBG"),interpolate = "linear")
 
-map_cols_cmip_fun <- function(indic = NA,  domain = NA) {
-
+map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
+  
   if (indic %in% c("tas","tasmax", "tasmin")) { # pentru toate temperaturile
-    df.col <- data.frame(
-      cols = cols_tas, 
-      vals = c(-40,-38,-36,-34,-32,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42)							
-    ) 
-    leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "°C","</html>")
+    
+    if (type %in% "climate") {
+      df.col <- data.frame(
+        cols = cols_tas, 
+        vals = c(-40,-38,-36,-34,-32,-30,-28,-26,-24,-22,-20,-18,-16,-14,-12,-10,-8,-6,-4,-2,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42)							
+      ) 
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "°C","</html>")
+      
+    } else {
+      df.col <- data.frame(
+        cols = c(rev(colintBlues(8)),colintReds(9)), 
+        vals = seq(-4,4, 0.5)
+      )
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "°C","</html>")
+    }
+    
   }
-
   
   if (indic  %in% "pr") { # pentru toate temperaturile
-    df.col <- data.frame(
-      cols = colint_pr(15), 
-      vals = c(0,10,20,30,40,50, 75, 100, 250, 500,750, 1000, 1500, 2000,3000)						
-    ) 
-    leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "l/m²","</html>")
+    if (type %in% "climate") {
+      df.col <- data.frame(
+        cols = colint_pr(15), 
+        vals = c(0,10,20,30,40,50, 75, 100, 250, 500,750, 1000, 1500, 2000,3000)						
+      ) 
+      
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "l/m²","</html>")
+      
+    } else {
+      
+      df.col <- data.frame(
+        cols = colintBrBG(13), 
+        vals = c(-50, -40,-30,-20,-10,-5, 0,5,10,20,30,40,50)
+      )
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "%","</html>")
+      
+    }
   }
+  
   
   
   # print(head(df.col))
