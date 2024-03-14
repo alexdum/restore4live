@@ -1,5 +1,5 @@
 parm,input
-Mean temperature (¡C),tas
-Mean of daily maximum temperature (¡C),tasmax
-Mean of daily minimum temperature (¡C) ,tasmin
+Mean temperature (Â°C),tas
+Mean of daily maximum temperature (Â°C)),tasmax
+Mean of daily minimum temperature (Â°C)) ,tasmin
 Precipitation (mm),pr
