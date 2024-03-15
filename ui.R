@@ -1,7 +1,7 @@
 
 ui <- 
   page_sidebar(
-    title = "Climate scenario",
+    title = "Danube basin - climate scenario",
     fillable_mobile = TRUE,
     sidebar = sidebar(
       selectInput(
