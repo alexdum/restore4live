@@ -8,8 +8,9 @@ server <- function(input, output) {
     season_subset <- strsplit(input$season, "-")[[1]][1]
     
     # uneste istricul cu scenariiul
-    file_hist <-  paste0("www/data/ncs/cmip6/",input$param,"/hist/",input$param,"_hist_",season, "-50_19601201-20141130.nc")
-    file_scen <- paste0("www/data/ncs/cmip6/",input$param,"/",input$scen,"/",input$param,"_",input$scen,"_",season, "-50_20150101-21001231.nc")
+    file_hist <-  grep(paste0("www/data/ncs/cmip6/",input$param,"/hist/",input$param,"_hist_",season, "-50_"), files_cmip6, value = T)
+    file_scen <- grep(paste0("www/data/ncs/cmip6/",input$param,"/",input$scen,"/",input$param,"_",input$scen,"_",season, "-50_"), files_cmip6, value = T)
+    print(file_hist)
     r <- c(rast(file_hist), rast(file_scen))
     
     dats <- time(r)
@@ -21,20 +22,16 @@ server <- function(input, output) {
     # pentru subsetare harta
     dats_sub <- time(r)
     
-    # pentur selectie tip de calcul
+    # pentru selectie tip de calcul
     if (input$quant %in% "climate") {
-      
       
       # pentru subsetare
       an1 <- strsplit(input$period_climate, "-")[[1]][1] |> as.numeric()
       an2 <- strsplit(input$period_climate, "-")[[1]][2] |> as.numeric()
       
-      print(c(an1, an2))
-      
-      # mediaza duop input
+      # mediaza duop input perioada
       r_mean <- mean(r[[format(dats_sub, "%Y") %in% an1:an2]])
       
-      # r <- mask(r, dun)
       setMinMax(r_mean)
       print(r_mean)
       
