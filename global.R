@@ -1,5 +1,6 @@
 library(shiny)
 library(bslib)
+library(bsicons)
 library(leaflet)
 library(sf)
 library(terra)
@@ -10,6 +11,7 @@ library(shinyWidgets)
 source("utils/leaflet_fun.R", local = T)
 source("utils/map_cols_cmip_fun.R", local = T)
 
+files_cmip6 <- list.files("www/data/ncs/cmip6", full.names = T, recursive = T)
 
 dun <- st_read("www/data/shps/DRBMP2015_DRBD.gpkg", quiet = T)
 
