@@ -11,11 +11,25 @@ ui <-
           "Minimum temperature" = "tasmin",
           "Precipitation" = "pr")),
       selectInput(
-        "quant", "Quantity",
+        "quant", 
+        span(
+          "Quantity",
+          tooltip(
+            bs_icon("info-circle"),
+            "Compute either the climatology or the change versus the baseline for a given parameter"
+          )
+        ), 
         c("Climatology" = "climate",
           "Change" = "change")),
       selectInput(
-        "scen", "Scenario",
+        "scen", 
+        span(
+          "Scenario",
+          tooltip(
+            bs_icon("info-circle"),
+            "Different emission scenario acoording to https://en.wikipedia.org/wiki/Shared_Socioeconomic_Pathways"
+          )
+        ), 
         c("SSP1" = "ssp1",
           "SSP2" = "ssp2",
           "SSP3" = "ssp3",
@@ -30,7 +44,13 @@ ui <-
         condition = "input.quant == 'climate'",
         sliderTextInput(
           inputId = "period_climate",
-          label = "Climate", 
+          span(
+            "Climate",
+            tooltip(
+              bs_icon("info-circle"),
+              "Aggregated values of the selected parameter for the given period"
+            )
+          ), 
           selected = c("1981-2010"),
           choices = c("1961-1990", "1981-2010", "2021-2040", "2041-2060", "2081-2100")),
       ),
@@ -38,7 +58,13 @@ ui <-
         condition = "input.quant == 'change'",
         sliderTextInput(
           inputId = "period_change",
-          label = "Change", 
+          span(
+            "Change",
+            tooltip(
+              bs_icon("info-circle"),
+              "Mean differences between the values of the reference period and a selected baseline"
+            )
+          ), 
           selected = c("1981-2010", "2021-2040"),
           choices = c("1961-1990", "1981-2010", "2021-2040", "2041-2060", "2081-2100"),
           from_min = "1961-1990", 
@@ -48,9 +74,17 @@ ui <-
       ),
       
       sliderInput(
-        "transp", "Transparency",
+        "transp",
+        span(
+          "Transparency",
+          tooltip(
+            bs_icon("info-circle"),
+            "Select raster CMIP6 opacity"
+          ) 
+        ),
         min = 0, max = 1, ticks = F,
-        value = 0.8, step = 0.1)),
+        value = 0.8, step = 0.1)
+    ),
     # Show results
     card(
       card_header(textOutput("map_titl")),
