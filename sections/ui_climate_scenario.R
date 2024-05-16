@@ -100,7 +100,7 @@ climate_scenario <-
       ),
       card(
         card_header("Graph"),
-        "TBA"
+        highchartOutput("chart_scen", height = "450px")
       )
     )
   )

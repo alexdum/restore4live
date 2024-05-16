@@ -8,11 +8,8 @@ data_sel <- reactive({
   # uneste istricul cu scenariiul
   file_hist <-  grep(paste0("www/data/ncs/cmip6/",input$param,"/hist/",input$param,"_hist_",season, "-50_"), files_cmip6, value = T)
   file_scen <- grep(paste0("www/data/ncs/cmip6/",input$param,"/",input$scen,"/",input$param,"_",input$scen,"_",season, "-50_"), files_cmip6, value = T)
-  print(file_hist)
   r <- c(rast(file_hist), rast(file_scen))
-  
   dats <- time(r)
-  print(summary(dats))
   
   # subseteaza sezoniere si lunare
   if (season_subset != "year") r <- r[[which(format(dats, "%m") %in% season_subset)]]
@@ -31,7 +28,7 @@ data_sel <- reactive({
     r_mean <- mean(r[[format(dats_sub, "%Y") %in% an1:an2]])
     
     setMinMax(r_mean)
-    print(r_mean)
+
     
   } else {
     
@@ -52,7 +49,7 @@ data_sel <- reactive({
       r_mean <- r_scen - r_hist
     }
     setMinMax(r_mean)
-    print(r_mean)
+
     
   }
   
@@ -63,7 +60,7 @@ data_sel <- reactive({
   r_mean[r_mean > pal$minmax[2]] <- pal$minmax[2]
   pal <- map_cols_cmip_fun(indic = input$param, type = input$quant, domain = minmax(r_mean))
   
-  list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp)
+  list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp, file_hist = file_hist, file_scen = file_scen)
   
 }) 
 
@@ -93,7 +90,8 @@ observe({
       labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE)))
 })
 
-# functie leaflet de start
+
+
 output$map_titl <- renderText({
   param <- params_def$parm[params_def$input %in% input$param]
   season <- names(select_seas[select_seas %in% input$season])
@@ -103,7 +101,40 @@ output$map_titl <- renderText({
   } else {
     paste(param, season, toupper(input$scen), " - change in multiannual mean", input$period_change[2], "vs.",  input$period_change[1]) 
   }
+})
+
+# reactive values pentru plot lst time series din raster
+values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
+
+observe({
+  lon = 25
+  lat = 46
+
+  dd_hist <- extract_point(fname =    data_sel()$file_hist , lon  = lon, lat = lat, variable = input$param) 
+  dd_scen <- extract_point(fname =    data_sel()$file_scen , lon  = lon, lat = lat, variable = input$param) 
+  dd <- append(dd_hist, dd_scen)
   
-  
+
+  ddf <- data.frame(date = as.Date(names(dd)), value = round(dd,1))
+  values_plot_na$input <- ddf
+  values_plot_na$title <- paste0("Extracted value ",  params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5))
+})
+
+
+library(highcharter)
+
+output$chart_scen <- renderHighchart({ 
+
+  highchart() %>%
+    hc_title(text = "Title") %>%
+    
+    # Convert date to string of the year part
+    hc_xAxis(categories = format(values_plot_na$input$date, "%Y")) %>%
+    
+    hc_yAxis(title = list(text = "Value")) %>%
+    
+    hc_add_series(name = "Data", data = values_plot_na$input$value, type = 'line')
+
   
 })
+
