@@ -7,6 +7,9 @@ library(terra)
 library(highcharter)
 library(RColorBrewer)
 library(shinyWidgets)
+library(reticulate)
+
+source_python("utils/extract_points.py") 
 
 source("utils/leaflet_fun.R", local = T)
 source("utils/map_cols_cmip_fun.R", local = T)
@@ -21,3 +24,4 @@ select_seas <- setNames(select_seas$choice, select_seas$parameter)
 
 # definitie parametri
 params_def <- read.csv("www/data/tabs/params_clim.csv")
+
