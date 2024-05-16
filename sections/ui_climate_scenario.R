@@ -89,11 +89,19 @@ climate_scenario <-
     sidebar = sidebar(
       climate_scenario_sidebar
     ),
-    # Show results
-    card(
-      card_header(textOutput("map_titl")),
-      full_screen = T,
-      leafletOutput("map")
+    layout_columns(
+      # width = 1/2,
+      # heights_equal = "row",
+      # Show results
+      card(
+        card_header(textOutput("map_titl")),
+        full_screen = T,
+        leafletOutput("map", height = "450px")
+      ),
+      card(
+        card_header("Graph"),
+        "TBA"
+      )
     )
   )
 
