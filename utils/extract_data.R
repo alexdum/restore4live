@@ -16,7 +16,7 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
   ddf <- data.frame(date = as.Date(names(dd)), value = round(dd, 1), value10 = round(dd10, 1), value90 = round(dd90,1))
   
   # Filter data based on season subset
-  if (season != "year")  ddf <- ddf |> filter(format(date, "%m") %in% season)
+  if (season != "year")  ddf <- ddf |> dolyr::filter(format(date, "%m") %in% season)
   
   return(ddf)
 }
