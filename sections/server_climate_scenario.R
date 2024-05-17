@@ -28,7 +28,7 @@ data_sel <- reactive({
     r_mean <- mean(r[[format(dats_sub, "%Y") %in% an1:an2]])
     
     setMinMax(r_mean)
-
+    
     
   } else {
     
@@ -49,7 +49,7 @@ data_sel <- reactive({
       r_mean <- r_scen - r_hist
     }
     setMinMax(r_mean)
-
+    
     
   }
   
@@ -60,7 +60,11 @@ data_sel <- reactive({
   r_mean[r_mean > pal$minmax[2]] <- pal$minmax[2]
   pal <- map_cols_cmip_fun(indic = input$param, type = input$quant, domain = minmax(r_mean))
   
-  list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp, file_hist = file_hist, file_scen = file_scen)
+  param_name <- params_def$parm[params_def$input %in% input$param]
+  season_name <- names(select_seas[select_seas %in% input$season])
+  
+  list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp, file_hist = file_hist, file_scen = file_scen,
+       season_subset = season_subset, param_name = param_name, season_name = season_name)
   
 }) 
 
@@ -93,9 +97,8 @@ observe({
 
 
 output$map_titl <- renderText({
-  param <- params_def$parm[params_def$input %in% input$param]
-  season <- names(select_seas[select_seas %in% input$season])
-  
+  param <- data_sel()$param_name
+  season <- data_sel()$season_name
   if (input$quant %in% "climate") {
     paste(param, season, toupper(input$scen), " - multiannual mean", input$period_climate) 
   } else {
@@ -106,35 +109,50 @@ output$map_titl <- renderText({
 # reactive values pentru plot lst time series din raster
 values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
 
-observe({
+observeEvent(list(input$oaram, input$scen, input$season, input$quant),{
+  
   lon = 25
   lat = 46
-
-  dd_hist <- extract_point(fname =    data_sel()$file_hist , lon  = lon, lat = lat, variable = input$param) 
-  dd_scen <- extract_point(fname =    data_sel()$file_scen , lon  = lon, lat = lat, variable = input$param) 
-  dd <- append(dd_hist, dd_scen)
   
-
-  ddf <- data.frame(date = as.Date(names(dd)), value = round(dd,1))
+  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
+  print(head(ddf))
   values_plot_na$input <- ddf
-  values_plot_na$title <- paste0("Extracted value ",  params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5))
+  values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
+ 
+  })
+
+# interactivitate raster
+observeEvent(input$map_click,{
+  proxy <- leafletProxy("map")
+  click <- input$map_click
+  print(click)
+  if (!is.null(click)) {
+    lon = click$lng
+    lat = click$lat
+    
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
+    values_plot_na$input <- ddf
+    values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
+  }
 })
 
 
-library(highcharter)
-
 output$chart_scen <- renderHighchart({ 
-
-  highchart() %>%
-    hc_title(text = "Title") %>%
-    
-    # Convert date to string of the year part
-    hc_xAxis(categories = format(values_plot_na$input$date, "%Y")) %>%
-    
-    hc_yAxis(title = list(text = "Value")) %>%
-    
-    hc_add_series(name = "Data", data = values_plot_na$input$value, type = 'line')
-
+  data_input <- values_plot_na$input
+  param_name <- params_def$parm[params_def$input %in% input$param]
+  col_line <- ifelse(input$param == "pr", "blue", "red")
   
+  highchart() %>%
+    #hc_title(text = "Value Trends Over Years") %>%
+    hc_xAxis(categories = format(data_input$date, "%Y")) %>%
+    hc_yAxis(title = list(text = "Value")) %>%
+    hc_add_series(color =  col_line,name = param_name, data = data_input$value, type = 'line', marker = list(enabled = FALSE)) %>%
+    hc_add_series(name = "P10 - P90", data = list_parse2(data.frame(low = data_input$value10, high = data_input$value90)), type = 'arearange', color = '#CCCCCC', lineWidth = 0, fillOpacity = 0.3, zIndex = 0)
+  
+})
+
+
+output$graph_titl <- renderText({
+  values_plot_na$title 
 })
 
