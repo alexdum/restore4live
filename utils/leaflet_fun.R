@@ -3,12 +3,12 @@ leaflet_fun <- function() {
   map <- leaflet(
     #data = data,
     options = leafletOptions(
-      minZoom = 6, maxZoom = 16
+      minZoom = 5, maxZoom = 16
     ) 
   ) %>%
     leaflet.extras::addBootstrapDependency() %>%
-    setView(20, 46, zoom = 6) %>%
-    setMaxBounds(7, 41.3, 31, 50.9) |>
+    setView(19, 46, zoom = 5) %>%
+    setMaxBounds(1, 25, 43, 65) |>
     #addMapPane(name = "SUHI", zIndex = 420) %>%
     #addMapPane(name = "judete", zIndex = 430) %>%
     addMapPane(name = "danube", zIndex = 440) %>%
@@ -19,7 +19,7 @@ leaflet_fun <- function() {
     addEasyButton(
       easyButton(
         icon    = "glyphicon glyphicon-home", title = "Reset zoom",
-        onClick = JS("function(btn, map){ map.setView([46, 20], 6); }")
+        onClick = JS("function(btn, map){ map.setView([46, 19], 5); }")
       )
     ) |>
     # addPolylines(
