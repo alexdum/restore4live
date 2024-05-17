@@ -115,7 +115,6 @@ observeEvent(list(input$oaram, input$scen, input$season, input$quant),{
   lat = 46
   
   ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
-  print(head(ddf))
   values_plot_na$input <- ddf
   values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
  
@@ -125,11 +124,10 @@ observeEvent(list(input$oaram, input$scen, input$season, input$quant),{
 observeEvent(input$map_click,{
   proxy <- leafletProxy("map")
   click <- input$map_click
-  print(click)
+
   if (!is.null(click)) {
     lon = click$lng
     lat = click$lat
-    
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
     values_plot_na$input <- ddf
     values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
@@ -142,6 +140,9 @@ output$chart_scen <- renderHighchart({
   param_name <- params_def$parm[params_def$input %in% input$param]
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
+  data_input$value90[data_input$value90 > 999] <- NA
+  
+  print(summary(data_input ))
   highchart() %>%
     #hc_title(text = "Value Trends Over Years") %>%
     hc_xAxis(categories = format(data_input$date, "%Y")) %>%
