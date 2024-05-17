@@ -99,7 +99,8 @@ climate_scenario <-
         leafletOutput("map", height = "450px")
       ),
       card(
-        card_header("Graph"),
+        card_header(textOutput("graph_titl")),
+        full_screen = T,
         highchartOutput("chart_scen", height = "450px")
       )
     )
