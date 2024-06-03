@@ -33,7 +33,7 @@ data_sel <- reactive({
   } else {
     
     # pentru subsetare
-    an1_hist <- strsplit(input$period_change[1], "-")[[1]][1] |> as.numeric()
+    an1_hist <- strsplit(input$period_climate[1], "-")[[1]][1] |> as.numeric()
     an2_hist <- strsplit(input$period_climate[1], "-")[[1]][2] |> as.numeric()
     an1_scen <- strsplit(input$period_change[2], "-")[[1]][1] |> as.numeric()
     an2_scen <- strsplit(input$period_change[2], "-")[[1]][2] |> as.numeric()
@@ -119,9 +119,8 @@ observeEvent(list(input$param, input$scen, input$season, input$quant),{
     lat = values_plot_na$lat
   }
     
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_climate)
     values_plot_na$input <- ddf
-    print(lat)
     values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
     values_plot_na$lon = lon
     values_plot_na$lat = lat
@@ -135,9 +134,9 @@ observeEvent(input$map_click,{
   if (!is.null(click)) {
     lon = click$lng
     lat = click$lat
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_climate)
     values_plot_na$input <- ddf
-    values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
+    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
     values_plot_na$lon = lon
     values_plot_na$lat = lat
   }
@@ -151,7 +150,6 @@ output$chart_scen <- renderHighchart({
   
   #data_input$value90[data_input$value90 > 999] <- NA
   
-  print(summary(data_input ))
   highchart() %>%
     #hc_title(text = "Value Trends Over Years") %>%
     hc_xAxis(categories = format(data_input$date, "%Y")) %>%
