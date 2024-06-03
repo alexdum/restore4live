@@ -121,8 +121,10 @@ observeEvent(list(input$param, input$scen, input$season, input$quant),{
     
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
     values_plot_na$input <- ddf
+    print(lat)
     values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
-  
+    values_plot_na$lon = lon
+    values_plot_na$lat = lat
 })
 
 # interactivitate raster
