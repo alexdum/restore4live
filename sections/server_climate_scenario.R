@@ -140,7 +140,7 @@ output$chart_scen <- renderHighchart({
   param_name <- params_def$parm[params_def$input %in% input$param]
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
-  data_input$value90[data_input$value90 > 999] <- NA
+  #data_input$value90[data_input$value90 > 999] <- NA
   
   print(summary(data_input ))
   highchart() %>%
