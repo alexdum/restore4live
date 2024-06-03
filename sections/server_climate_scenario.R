@@ -109,7 +109,7 @@ output$map_titl <- renderText({
 # reactive values pentru plot lst time series din raster
 values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
 
-observeEvent(list(input$oaram, input$scen, input$season, input$quant),{
+observeEvent(list(input$param, input$scen, input$season, input$quant),{
   
   lon = 25
   lat = 46
