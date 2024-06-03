@@ -111,26 +111,33 @@ values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
 
 observeEvent(list(input$param, input$scen, input$season, input$quant),{
   
-  lon = 25
-  lat = 46
+  if (is.null( values_plot_na$input)) {
+    lon = 25
+    lat = 46
+  } else {
+    lon = values_plot_na$lon
+    lat = values_plot_na$lat
+  }
+    
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
+    values_plot_na$input <- ddf
+    values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
   
-  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
-  values_plot_na$input <- ddf
-  values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
- 
-  })
+})
 
 # interactivitate raster
 observeEvent(input$map_click,{
   proxy <- leafletProxy("map")
   click <- input$map_click
-
+  
   if (!is.null(click)) {
     lon = click$lng
     lat = click$lat
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset)
     values_plot_na$input <- ddf
     values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
+    values_plot_na$lon = lon
+    values_plot_na$lat = lat
   }
 })
 
