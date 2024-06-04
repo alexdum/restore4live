@@ -33,10 +33,15 @@ data_sel <- reactive({
   } else {
     
     # pentru subsetare
-    an1_hist <- strsplit(input$period_climate[1], "-")[[1]][1] |> as.numeric()
-    an2_hist <- strsplit(input$period_climate[1], "-")[[1]][2] |> as.numeric()
+    an1_hist <- strsplit(input$period_change[1], "-")[[1]][1] |> as.numeric()
+    an2_hist <- strsplit(input$period_change[1], "-")[[1]][2] |> as.numeric()
     an1_scen <- strsplit(input$period_change[2], "-")[[1]][1] |> as.numeric()
     an2_scen <- strsplit(input$period_change[2], "-")[[1]][2] |> as.numeric()
+    
+    print(an1_hist)
+    print(an2_hist)
+    print(an1_scen)
+    print(an2_scen)
     
     # mediaza duop input
     r_hist <- mean(r[[format(dats_sub, "%Y") %in% an1_hist:an2_hist]])
