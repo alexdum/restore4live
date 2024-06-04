@@ -46,7 +46,7 @@ climate_scenario_sidebar <- list(
           "Aggregated values of the selected parameter for the given period"
         )
       ), 
-      selected = c("1981-2010"),
+      selected = c("2041-2060"),
       choices = c("1961-1990", "1981-2010", "2021-2040", "2041-2060", "2081-2100")),
   ),
   conditionalPanel(
@@ -60,7 +60,7 @@ climate_scenario_sidebar <- list(
           "Mean differences between the values of the reference period and a selected baseline"
         )
       ), 
-      selected = c("1981-2010", "2021-2040"),
+      selected = c("1981-2010", "2041-2060"),
       choices = c("1961-1990", "1981-2010", "2021-2040", "2041-2060", "2081-2100"),
       from_min = "1961-1990", 
       from_max = "1981-2010",
