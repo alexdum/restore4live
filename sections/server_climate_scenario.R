@@ -118,12 +118,18 @@ observeEvent(list(input$param, input$scen, input$season, input$quant, input$peri
     lon = values_plot_na$lon
     lat = values_plot_na$lat
   }
-    
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change)
-    values_plot_na$input <- ddf
-    values_plot_na$title <- paste0( params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
-    values_plot_na$lon = lon
-    values_plot_na$lat = lat
+  
+  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change)
+  values_plot_na$input <- ddf
+  # title graphic
+  if (input$quant %in% "climate") {
+    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 3)," lat = "  , round(lat, 3)," (click on map to update the graph)")
+  } else {
+    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," changes relative to the ",input$period_change[1]," mean; values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
+  }
+  
+  values_plot_na$lon = lon
+  values_plot_na$lat = lat
 })
 
 # interactivitate raster
@@ -136,7 +142,13 @@ observeEvent(input$map_click,{
     lat = click$lat
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change)
     values_plot_na$input <- ddf
-    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5) ," (click on map to update the graph)")
+    # title graphic
+    if (input$quant %in% "climate") {
+      values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 3)," lat = "  , round(lat, 3)," (click on map to update the graph)")
+    } else {
+      values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," changes relative to the",input$period_change[1]," mean; values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
+    }
+    
     values_plot_na$lon = lon
     values_plot_na$lat = lat
   }
