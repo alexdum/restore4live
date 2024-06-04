@@ -17,8 +17,7 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
   
   # Filter data based on season subset
   if (season != "year")  ddf <- ddf |> dplyr::filter(format(date, "%m") %in% season)
-  
-  print(summary(ddf))
+
   # ggrafic cu evolutia schimbarii
   if (quant %in% "change") {
     
