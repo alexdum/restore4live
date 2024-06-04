@@ -1,4 +1,4 @@
-extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param, season, quant, period_change) {
+extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param, season, quant, period_change, period_climate) {
   # Extract data points using the dataset_function
   dd_hist <- dataset_function(fname = file_hist, lon = lon, lat = lat, variable = param)
   dd_scen <- dataset_function(fname = file_scen, lon = lon, lat = lat, variable = param)
@@ -17,6 +17,10 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
   
   # Filter data based on season subset
   if (season != "year")  ddf <- ddf |> dplyr::filter(format(date, "%m") %in% season)
+  
+  # filtreaza dupa periaoda vizualizat in harta
+  an2 <- strsplit(period_climate, "-")[[1]][2] |> as.numeric()
+  ddf <- ddf |> dplyr::filter(as.numeric(format(date,"%Y")) <= an2)
 
   # ggrafic cu evolutia schimbarii
   if (quant %in% "change") {
