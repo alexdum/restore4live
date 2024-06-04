@@ -60,7 +60,8 @@ data_sel <- reactive({
   r_mean[r_mean > pal$minmax[2]] <- pal$minmax[2]
   pal <- map_cols_cmip_fun(indic = input$param, type = input$quant, domain = minmax(r_mean))
   
-  param_name <- params_def$parm[params_def$input %in% input$param]
+  # titlu cu unitate de masura extrasa din - map_cols_cmip_fun
+  param_name <- paste0(params_def$parm[params_def$input %in% input$param], " (",strsplit(pal$tit_leg, ";|<")[[1]][7],")")
   season_name <- names(select_seas[select_seas %in% input$season])
   
   list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp, file_hist = file_hist, file_scen = file_scen,
@@ -109,7 +110,7 @@ output$map_titl <- renderText({
 # reactive values pentru plot lst time series din raster
 values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
 
-observeEvent(list(input$param, input$scen, input$season, input$quant, input$period_change),{
+observeEvent(list(input$param, input$scen, input$season, input$quant, input$period_change, input$period_climate),{
   
   if (is.null( values_plot_na$input)) {
     lon = 25
@@ -119,14 +120,11 @@ observeEvent(list(input$param, input$scen, input$season, input$quant, input$peri
     lat = values_plot_na$lat
   }
   
-  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change)
+  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change, input$period_climate)
   values_plot_na$input <- ddf
   # title graphic
-  if (input$quant %in% "climate") {
-    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 3)," lat = "  , round(lat, 3)," (click on map to update the graph)")
-  } else {
-    values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," changes relative to the ",input$period_change[1]," mean; values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
-  }
+  values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change,lon, lat)
+  
   
   values_plot_na$lon = lon
   values_plot_na$lat = lat
@@ -140,14 +138,12 @@ observeEvent(input$map_click,{
   if (!is.null(click)) {
     lon = click$lng
     lat = click$lat
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change)
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
     values_plot_na$input <- ddf
     # title graphic
-    if (input$quant %in% "climate") {
-      values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," values for point lon = ",round(lon, 3)," lat = "  , round(lat, 3)," (click on map to update the graph)")
-    } else {
-      values_plot_na$title <- paste0(params_def$parm[params_def$input %in% input$param]," changes relative to the",input$period_change[1]," mean; values for point lon = ",round(lon, 5)," lat = "  , round(lat, 5)," (click on map to update the graph)")
-    }
+    
+    values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
+    
     
     values_plot_na$lon = lon
     values_plot_na$lat = lat
