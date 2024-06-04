@@ -13,14 +13,14 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
   dd10 <- append(dd_hist_10, dd_scen_10)
   
   # Create data frame
-  ddf <- data.frame(date = as.Date(names(dd)), value = round(dd, 1), value10 = round(dd10, 1), value90 = round(dd90,1))
+  dd <- data.frame(date = as.Date(names(dd)), value = round(dd, 1), value10 = round(dd10, 1), value90 = round(dd90,1))
   
   # Filter data based on season subset
-  if (season != "year")  ddf <- ddf |> dplyr::filter(format(date, "%m") %in% season)
+  if (season != "year")  dd <- dd |> dplyr::filter(format(date, "%m") %in% season)
   
   # filtreaza dupa periaoda vizualizat in harta
   an2 <- strsplit(period_climate, "-")[[1]][2] |> as.numeric()
-  ddf <- ddf |> dplyr::filter(as.numeric(format(date,"%Y")) <= an2)
+  ddf <- dd |> dplyr::filter(as.numeric(format(date,"%Y")) <= an2)
 
   # ggrafic cu evolutia schimbarii
   if (quant %in% "change") {
@@ -33,7 +33,7 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
     an22 <- strsplit(period_change, "-")[[2]][2] |> as.numeric()
   
    
-    ddf <- ddf |> dplyr::filter(as.numeric(format(date,"%Y")) <= an22)
+    ddf <- dd |> dplyr::filter(as.numeric(format(date,"%Y")) <= an22)
     
     # mediaza duop input perioada
     df_mean <- mean(ddf$value[as.numeric(format(ddf$date, "%Y")) >= an11 & as.numeric(format(ddf$date, "%Y")) <= an12])
