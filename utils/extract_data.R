@@ -1,4 +1,4 @@
-extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param, season, quant, period_climate) {
+extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param, season, quant, period_change) {
   # Extract data points using the dataset_function
   dd_hist <- dataset_function(fname = file_hist, lon = lon, lat = lat, variable = param)
   dd_scen <- dataset_function(fname = file_scen, lon = lon, lat = lat, variable = param)
@@ -23,30 +23,32 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
   if (quant %in% "change") {
     
     # pentru subsetare
-    an1 <- strsplit(period_climate, "-")[[1]][1] |> as.numeric()
-    an2 <- strsplit(period_climate, "-")[[1]][2] |> as.numeric()
+    an11 <- strsplit(period_change, "-")[[1]][1] |> as.numeric()
+    an12 <- strsplit(period_change, "-")[[1]][2] |> as.numeric()
+    
+    an21 <- strsplit(period_change, "-")[[2]][1] |> as.numeric()
+    an22 <- strsplit(period_change, "-")[[2]][2] |> as.numeric()
   
-    print(an1)
-    print(an2)
    
+    ddf <- ddf |> dplyr::filter(as.numeric(format(date,"%Y")) <= an22)
+    
     # mediaza duop input perioada
-    df_mean <- mean(ddf$value[as.numeric(format(ddf$date, "%Y")) >= an1 & as.numeric(format(ddf$date, "%Y")) <= an2])
-    df_mean90 <- mean(ddf$value90[as.numeric(format(ddf$date, "%Y")) >= an1 & as.numeric(format(ddf$date, "%Y")) <= an2])
-    df_mean10 <- mean(ddf$value10[as.numeric(format(ddf$date, "%Y")) >= an1 & as.numeric(format(ddf$date, "%Y")) <= an2])
+    df_mean <- mean(ddf$value[as.numeric(format(ddf$date, "%Y")) >= an11 & as.numeric(format(ddf$date, "%Y")) <= an12])
+    # df_mean90 <- mean(ddf$value90[as.numeric(format(ddf$date, "%Y")) >= an1 & as.numeric(format(ddf$date, "%Y")) <= an2])
+    # df_mean10 <- mean(ddf$value10[as.numeric(format(ddf$date, "%Y")) >= an1 & as.numeric(format(ddf$date, "%Y")) <= an2])
    
        # schimbarea
     if (param %in% "pr") {
-      ddf$value <- ((ddf$value * 100)/df_mean) - 100
-      ddf$value90 <- ((ddf$value90 * 100)/df_mean90) - 100
-      ddf$value10 <- ((ddf$value10 * 100)/df_mean10) - 100
+      ddf$value <- round(((ddf$value * 100)/df_mean) - 100, 1)
+      ddf$value90 <- round(((ddf$value90 * 100)/df_mean) - 100, 1)
+      ddf$value10 <- round(((ddf$value10 * 100)/df_mean) - 100, 1)
     
     } else {
-      ddf$value <- ddf$value - df_mean 
-      ddf$value90 <- ddf$value90 - df_mean90 
-      ddf$value10 <- ddf$value10 - df_mean10 
+      ddf$value <- round(ddf$value - df_mean, 1)
+      ddf$value90 <- round(ddf$value90 - df_mean, 1)
+      ddf$value10 <- round(ddf$value10 - df_mean, 1)
     }
   }
   
-  print(summary(ddf))
   return(ddf)
 }
