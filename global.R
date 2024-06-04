@@ -14,7 +14,8 @@ source_python("utils/extract_points.py")
 
 source("utils/leaflet_fun.R", local = T)
 source("utils/map_cols_cmip_fun.R", local = T)
-source("utils/extract_data.R") # fucntie pentru extragere date din netcdf
+source("utils/extract_data.R", local = T) # functie pentru extragere date din netcdf
+source("utils/graph_title_climate.R", local = T) # titlu grafic scenarii climatice
 
 files_cmip6 <- list.files("www/data/ncs/cmip6", full.names = T, recursive = T)
 
