@@ -17,7 +17,7 @@ def extract_point(fname, lon, lat, variable):
     if lon < lon_min or lon > lon_max or lat < lat_min or lat > lat_max:
        
         data = (f"Provided lon and/or lat are outside the dataset range: "
-                   f"lon ({lon_min} to {lon_max}), lat ({lat_min} to {lat_max})")
+                   f"lon ({lon_min:.3f} to {lon_max:.3f}), lat ({lat_min:.3f} to {lat_max:.3f})")
     else:
         # Select the nearest point
         dsloc = ds.sel(lon=lon, lat=lat, method='nearest')
