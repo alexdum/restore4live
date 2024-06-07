@@ -145,7 +145,6 @@ observeEvent(input$map_click,{
     lat = click$lat
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
     values_plot_na$input <- ddf
-    print(    ddf)
     # title graphic
     
     values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
