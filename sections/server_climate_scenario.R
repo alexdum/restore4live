@@ -38,10 +38,6 @@ data_sel <- reactive({
     an1_scen <- strsplit(input$period_change[2], "-")[[1]][1] |> as.numeric()
     an2_scen <- strsplit(input$period_change[2], "-")[[1]][2] |> as.numeric()
     
-    print(an1_hist)
-    print(an2_hist)
-    print(an1_scen)
-    print(an2_scen)
     
     # mediaza duop input
     r_hist <- mean(r[[format(dats_sub, "%Y") %in% an1_hist:an2_hist]])
