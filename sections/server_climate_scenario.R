@@ -145,6 +145,7 @@ observeEvent(input$map_click,{
     lat = click$lat
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
     values_plot_na$input <- ddf
+    print(    ddf)
     # title graphic
     
     values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
@@ -162,14 +163,20 @@ output$chart_scen <- renderHighchart({
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
   #data_input$value90[data_input$value90 > 999] <- NA
-  
-  highchart() %>%
-    #hc_title(text = "Value Trends Over Years") %>%
-    hc_xAxis(categories = format(data_input$date, "%Y")) %>%
-    hc_yAxis(title = list(text = "Value")) %>%
-    hc_add_series(color =  col_line,name = param_name, data = data_input$value, type = 'line', marker = list(enabled = FALSE)) %>%
-    hc_add_series(name = "P10 - P90", data = list_parse2(data.frame(low = data_input$value10, high = data_input$value90)), type = 'arearange', color = '#CCCCCC', lineWidth = 0, fillOpacity = 0.3, zIndex = 0)
-  
+  if (!is.character(data_input)) {
+    highchart() %>%
+      #hc_title(text = "Value Trends Over Years") %>%
+      hc_xAxis(categories = format(data_input$date, "%Y")) %>%
+      hc_yAxis(title = list(text = "Value")) %>%
+      hc_add_series(color =  col_line,name = param_name, data = data_input$value, type = 'line', marker = list(enabled = FALSE)) %>%
+      hc_add_series(name = "P10 - P90", data = list_parse2(data.frame(low = data_input$value10, high = data_input$value90)), type = 'arearange', color = '#CCCCCC', lineWidth = 0, fillOpacity = 0.3, zIndex = 0)
+    
+  } else {
+    highchart() |> 
+      hc_title(
+        text = data_input,
+        style = list(fontSize = "14px", color = "grey"))
+  }
 })
 
 
