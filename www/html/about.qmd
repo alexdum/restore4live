@@ -1,14 +1,16 @@
 ---
 format: 
   html:
-    toc: false
+    toc: true
+    toc-depth: 4
+    toc-location: left
+    toc-title: "Contents"
     
     code-fold: true
 bibliography: references.bib
 ---
 
 ### Info about data used in the platform
-
 #### Climate scenario [@riahi2017a]
 
 ##### SSP1: Sustainability (Taking the Green Road)
