@@ -10,5 +10,10 @@ ui <-
     nav_panel(
       title = "Remote Sensing",
       p("TBA")
+    ),
+    nav_panel(
+      class = "bslib-page-dashboard",
+      "About",
+      htmlOutput("about")
     )
   )

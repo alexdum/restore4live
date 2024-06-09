@@ -1,0 +1,13 @@
+---
+format: 
+  html:
+    toc: false
+    
+    code-fold: true
+---
+
+### Info about data used in the platform
+
+#### Climate scenario
+
+#### Remote sensing
