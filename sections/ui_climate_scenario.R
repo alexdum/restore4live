@@ -22,7 +22,7 @@ climate_scenario_sidebar <- list(
       "Scenario",
       tooltip(
         bs_icon("info-circle"),
-        "Different emission scenario acoording to https://en.wikipedia.org/wiki/Shared_Socioeconomic_Pathways"
+        "Different emission scenario (see About section)"
       )
     ), 
     c("SSP1" = "ssp1",
