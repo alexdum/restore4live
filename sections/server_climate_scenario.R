@@ -158,12 +158,11 @@ output$chart_scen <- renderHighchart({
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
   
-  # Calculate trendline using linear regression
-  trendline <- lm(value ~ as.numeric(date), data = data_input)
-  data_input$trendline <- predict(trendline) |> round(3)
-  
   #data_input$value90[data_input$value90 > 999] <- NA
   if (!is.character(data_input)) {
+    # Calculate trendline using linear regression
+    trendline <- lm(value ~ as.numeric(date), data = data_input)
+    data_input$trendline <- predict(trendline) |> round(3)
     highchart() %>%
       #hc_title(text = "Value Trends Over Years") %>%
       hc_xAxis(categories = format(data_input$date, "%Y")) %>%
