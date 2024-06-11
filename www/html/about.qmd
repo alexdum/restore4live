@@ -13,7 +13,7 @@ bibliography: references.bib
 
 #### CMIP6 climate scenario
 
-
+The data were processed from eight models, as ensemble median, 10th and 90th percentiles. Four parameter were selected.
 
 | Model         | Run      | Resolution (°) | Resolution (km) |
 |:--------------|:---------|:---------------|:----------------|
@@ -28,7 +28,7 @@ bibliography: references.bib
 
 : Models processed for the Climate Scenario section {.striped .hover #tbl-cap-location: top}
 
-The data were processed from eight models, as ensemble median, 10th and 90th percentiles. Four parameter were selected.
+The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.
 
 | Variable name  | Units   |
 |:--------------|:---------|
@@ -38,7 +38,7 @@ The data were processed from eight models, as ensemble median, 10th and 90th per
 |Precipitation|mm|
 : Variable sleected {.striped .hover #tbl-cap-location: top}
 
-The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.
+
 
 The following scenarios were selected (as described below) [@riahi2017a]:
 
