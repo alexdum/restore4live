@@ -67,7 +67,7 @@ div.csl-indent {
   <ul>
   <li><a href="#info-about-data-used-in-the-platform" id="toc-info-about-data-used-in-the-platform" class="nav-link active" data-scroll-target="#info-about-data-used-in-the-platform">Info about data used in the platform</a>
   <ul>
-  <li><a href="#climate-scenario-riahi2017a" id="toc-climate-scenario-riahi2017a" class="nav-link" data-scroll-target="#climate-scenario-riahi2017a">Climate scenario <span class="citation" data-cites="riahi2017a">(Riahi et al. 2017)</span></a></li>
+  <li><a href="#cmip6-climate-scenario" id="toc-cmip6-climate-scenario" class="nav-link" data-scroll-target="#cmip6-climate-scenario">CMIP6 climate scenario</a></li>
   <li><a href="#remote-sensing" id="toc-remote-sensing" class="nav-link" data-scroll-target="#remote-sensing">Remote sensing</a></li>
   </ul></li>
   </ul>
@@ -82,8 +82,99 @@ div.csl-indent {
 
 <section id="info-about-data-used-in-the-platform" class="level3">
 <h3 class="anchored" data-anchor-id="info-about-data-used-in-the-platform">Info about data used in the platform</h3>
-<section id="climate-scenario-riahi2017a" class="level4">
-<h4 class="anchored" data-anchor-id="climate-scenario-riahi2017a">Climate scenario <span class="citation" data-cites="riahi2017a">(<a href="#ref-riahi2017a" role="doc-biblioref">Riahi et al. 2017</a>)</span></h4>
+<section id="cmip6-climate-scenario" class="level4">
+<h4 class="anchored" data-anchor-id="cmip6-climate-scenario">CMIP6 climate scenario</h4>
+<table class="table">
+<caption>Models processed for the Climate Scenario section</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Model</th>
+<th style="text-align: left;">Run</th>
+<th style="text-align: left;">Resolution (°)</th>
+<th style="text-align: left;">Resolution (km)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">CNRM_ESM2_1</td>
+<td style="text-align: left;">r1i1p1f2</td>
+<td style="text-align: left;">1.4 x 1.4</td>
+<td style="text-align: left;">155.54</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">EC_EARTH3_VEG</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">0.7 x 0.7</td>
+<td style="text-align: left;">77.77</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">IPSL_CM6A_LR</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">2.5 x 1.26</td>
+<td style="text-align: left;">277.75 x 139.98</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MIROC6</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">1.4 x 1.4</td>
+<td style="text-align: left;">155.54</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">MPI_ESM1_2_HR</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">0.93 x 0.93</td>
+<td style="text-align: left;">103.32</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">MPI_ESM1_2_LR</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">1.87 x 1.87</td>
+<td style="text-align: left;">207.75</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">NORESM2_MM</td>
+<td style="text-align: left;">r1i1p1f1</td>
+<td style="text-align: left;">1.25 x 0.94</td>
+<td style="text-align: left;">138.87 x 104.43</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">UKESM1_0_LL</td>
+<td style="text-align: left;">r1i1p1f2</td>
+<td style="text-align: left;">1.87 x 1.25</td>
+<td style="text-align: left;">207.75 x 138.87</td>
+</tr>
+</tbody>
+</table>
+<p>The data were processed from eight models, as ensemble median, 10th and 90th percentiles. Four parameter were selected.</p>
+<table class="table">
+<caption>Variable sleected</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable name</th>
+<th style="text-align: left;">Units</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Mean temperature</td>
+<td style="text-align: left;">°C</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mean of daily maximum temperature</td>
+<td style="text-align: left;">°C</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mean of daily minimum temperature</td>
+<td style="text-align: left;">°C</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Precipitation</td>
+<td style="text-align: left;">mm</td>
+</tr>
+</tbody>
+</table>
+<p>The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.</p>
+<p>The following scenarios were selected (as described below) <span class="citation" data-cites="riahi2017a">(<a href="#ref-riahi2017a" role="doc-biblioref">Riahi et al. 2017</a>)</span>:</p>
 <section id="ssp1-sustainability-taking-the-green-road" class="level5">
 <h5 class="anchored" data-anchor-id="ssp1-sustainability-taking-the-green-road">SSP1: Sustainability (Taking the Green Road)</h5>
 <p>The world shifts gradually, but pervasively, toward a more sustainable path, emphasizing more inclusive development that respects predicted environmental boundaries. Management of the global commons slowly improves, educational and health investments accelerate the demographic transition, and the emphasis on economic growth shifts toward a broader emphasis on human well-being. Driven by an increasing commitment to achieving development goals, inequality is reduced both across and within countries. Consumption is oriented toward low material growth and lower resource and energy intensity .</p>

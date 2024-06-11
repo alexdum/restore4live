@@ -5,13 +5,42 @@ format:
     toc-depth: 4
     toc-location: left
     toc-title: "Contents"
-    
     code-fold: true
 bibliography: references.bib
 ---
 
 ### Info about data used in the platform
-#### Climate scenario [@riahi2017a]
+
+#### CMIP6 climate scenario
+
+
+
+| Model         | Run      | Resolution (°) | Resolution (km) |
+|:--------------|:---------|:---------------|:----------------|
+| CNRM_ESM2_1   | r1i1p1f2 | 1.4 x 1.4      | 155.54          |
+| EC_EARTH3_VEG | r1i1p1f1 | 0.7 x 0.7      | 77.77           |
+| IPSL_CM6A_LR  | r1i1p1f1 | 2.5 x 1.26     | 277.75 x 139.98 |
+| MIROC6        | r1i1p1f1 | 1.4 x 1.4      | 155.54          |
+| MPI_ESM1_2_HR | r1i1p1f1 | 0.93 x 0.93    | 103.32          |
+| MPI_ESM1_2_LR | r1i1p1f1 | 1.87 x 1.87    | 207.75          |
+| NORESM2_MM    | r1i1p1f1 | 1.25 x 0.94    | 138.87 x 104.43 |
+| UKESM1_0_LL   | r1i1p1f2 | 1.87 x 1.25    | 207.75 x 138.87 |
+
+: Models processed for the Climate Scenario section {.striped .hover #tbl-cap-location: top}
+
+The data were processed from eight models, as ensemble median, 10th and 90th percentiles. Four parameter were selected.
+
+| Variable name  | Units   |
+|:--------------|:---------|
+|Mean temperature|°C|
+|Mean of daily maximum temperature|°C|
+|Mean of daily minimum temperature|°C|
+|Precipitation|mm|
+: Variable sleected {.striped .hover #tbl-cap-location: top}
+
+The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.
+
+The following scenarios were selected (as described below) [@riahi2017a]:
 
 ##### SSP1: Sustainability (Taking the Green Road)
 
