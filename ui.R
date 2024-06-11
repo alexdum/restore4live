@@ -3,6 +3,7 @@ ui <-
   page_navbar(
     title = "Danube basin",
     fillable_mobile = T,
+    selected = "About",
     nav_panel(
       title = "Climate scenario",
       climate_scenario
