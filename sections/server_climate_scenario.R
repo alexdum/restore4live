@@ -157,6 +157,11 @@ output$chart_scen <- renderHighchart({
   param_name <- params_def$parm[params_def$input %in% input$param]
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
+  
+  # Calculate trendline using linear regression
+  trendline <- lm(value ~ as.numeric(date), data = data_input)
+  data_input$trendline <- predict(trendline) |> round(3)
+  
   #data_input$value90[data_input$value90 > 999] <- NA
   if (!is.character(data_input)) {
     highchart() %>%
@@ -164,7 +169,8 @@ output$chart_scen <- renderHighchart({
       hc_xAxis(categories = format(data_input$date, "%Y")) %>%
       hc_yAxis(title = list(text = "Value")) %>%
       hc_add_series(color =  col_line,name = param_name, data = data_input$value, type = 'line', marker = list(enabled = FALSE)) %>%
-      hc_add_series(name = "P10 - P90", data = list_parse2(data.frame(low = data_input$value10, high = data_input$value90)), type = 'arearange', color = '#CCCCCC', lineWidth = 0, fillOpacity = 0.3, zIndex = 0)
+      hc_add_series(name = "P10 - P90", data = list_parse2(data.frame(low = data_input$value10, high = data_input$value90)), type = 'arearange', color = '#CCCCCC', lineWidth = 0, fillOpacity = 0.3, zIndex = 0) |>
+      hc_add_series(name = "Trendline", data = data_input$trendline, type = 'line', color = 'grey', dashStyle = 'shortdash')
     
   } else {
     highchart() |> 
