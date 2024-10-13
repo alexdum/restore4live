@@ -13,7 +13,7 @@ bibliography: references.bib
 
 #### CMIP6 climate scenarios
 
-The data were processed from eight models as ensemble median, and 10th and 90th percentiles. 
+The dataset was derived from simulations of eight models, with results aggregated using the ensemble median, alongside the 10th and 90th percentiles to capture variability. A bias-correction technique, specifically Quantile Delta Mapping (QDM), was implemented within a spatial disaggregation framework. This approach aimed to mitigate uncertainties stemming from systematic model biases and enhance the spatial resolution of the projected data [@smau_bias-corrected_2024].
 
 
 | Model         | Run      | Resolution (°) | Resolution (km) |
