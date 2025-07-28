@@ -1,5 +1,5 @@
 import xarray as xr
-import pandas as pd
+
 
 def extract_point(fname, lon, lat, variable):
     # Open the dataset
