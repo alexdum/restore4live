@@ -60,6 +60,34 @@ leaflet_fun <- function() {
         direction = "auto"
       )
     ) |> addPolygons(
+      data = romania_ro,
+      stroke = TRUE,
+      color = "red",
+      opacity = 1,
+      fillOpacity = 0.3,
+      fillColor = "#444444",
+      weight = 1,
+      smoothFactor = 0.5,
+      group = "Romania",
+      highlightOptions = highlightOptions(
+        weight = 2,
+        color = "blue",
+        fillOpacity = 0.5,
+        bringToFront = TRUE
+      ),
+      label = ~Name,
+      labelOptions = labelOptions(
+        style = list(
+          "color" = "black",
+          "font-family" = "Arial",
+          "font-weight" = "bold",
+          "font-size" = "12px"
+        ),
+        textsize = "12px",
+        direction = "auto"
+      )
+    ) |>
+    addPolygons(
       data = serbia_rs,
       stroke = TRUE,
       color = "red",
