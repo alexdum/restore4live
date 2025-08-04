@@ -1,4 +1,12 @@
 climate_scenario_sidebar <- list(
+    selectInput(
+    inputId = "test_area",
+    label = "Area of interest",
+    choices = c("Danube River Basin" = "drb",
+        "Romania" = "ro",
+      "Austria" = "at",
+      "Serbia" = "rs"),
+    selected = "drb"),
   selectInput(
     "param", "Parameter",
     c("Mean temperature" = "tas",
