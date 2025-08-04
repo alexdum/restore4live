@@ -97,6 +97,28 @@ observe({
 })
 
 
+# zoom to selected area
+observeEvent(input$test_area, {
+  req(input$test_area)
+  
+  shape_to_zoom <- switch(
+    input$test_area,
+    "drb" = dun,
+    "ro" = romania_ro,
+    "at" = austria_at,
+    "rs" = serbia_rs
+  )
+  
+  bbox <- sf::st_bbox(shape_to_zoom)
+  
+  leafletProxy("map") %>%
+    fitBounds(
+      lng1 = bbox[["xmin"]], lat1 = bbox[["ymin"]],
+      lng2 = bbox[["xmax"]], lat2 = bbox[["ymax"]]
+    )
+})
+
+
 
 output$map_titl <- renderText({
   param <- data_sel()$param_name
@@ -183,4 +205,3 @@ output$chart_scen <- renderHighchart({
 output$graph_titl <- renderText({
   values_plot_na$title 
 })
-
