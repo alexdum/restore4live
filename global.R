@@ -25,6 +25,10 @@ dun <- st_read("www/data/shps/DRBMP2015_DRBD.gpkg", quiet = T)
 austria_at <- st_read("www/data/shps/austria_at.gpkg", quiet = T)
 names(austria_at)[6] <- "Name"
 romania_ro <- st_read("www/data/shps/carasuhat_ro.gpkg", quiet = T)
+# The geometry has a Z dimension which can cause issues with leaflet.
+# We will drop the Z dimension to ensure it's a 2D object.
+romania_ro <- st_zm(romania_ro)
+
 serbia_rs <- st_read("www/data/shps/vlasina_rs.gpkg", quiet = T)
 names(serbia_rs)[4] <- 'Name'
 
@@ -34,4 +38,3 @@ select_seas <- setNames(select_seas$choice, select_seas$parameter)
 
 # definitie parametri
 params_def <- read.csv("www/data/tabs/params_clim.csv")
-
