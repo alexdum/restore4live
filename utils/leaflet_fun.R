@@ -31,90 +31,44 @@ leaflet_fun <- function() {
       stroke = TRUE,color = "black",opacity = 1,  fillOpacity = 0,
       fillColor =  "#444444", weight = 1, smoothFactor = 0.5,
      # options = pathOptions(pane = "danube"),
-      group = "Danube") |>
-    addPolygons(
-      data = austria_at,
-      stroke = TRUE,
-      color = "red",
-      opacity = 1,
-      fillOpacity = 0.3,
-      fillColor = "#444444",
-      weight = 1,
-      smoothFactor = 0.5,
-      group = "Austria",
-      highlightOptions = highlightOptions(
-        weight = 2,
-        color = "blue",
-        fillOpacity = 0.5,
-        bringToFront = TRUE
-      ),
-      label = ~Name,
-      labelOptions = labelOptions(
-        style = list(
-          "color" = "black",
-          "font-family" = "Arial",
-          "font-weight" = "bold",
-          "font-size" = "12px"
+      group = "Danube") 
+  
+  
+  
+  # Loop to add polygons for each country
+  for (layer_info in country_layers) {
+    map <- map |>
+      addPolygons(
+        data = layer_info$data,
+        group = layer_info$name,
+        stroke = TRUE,
+        color = "red",
+        opacity = 1,
+        fillOpacity = 0.3,
+        fillColor = "#444444",
+        weight = 1,
+        smoothFactor = 0.5,
+        highlightOptions = highlightOptions(
+          weight = 2,
+          color = "blue",
+          fillOpacity = 0.5,
+          bringToFront = TRUE
         ),
-        textsize = "12px",
-        direction = "auto"
+        label = ~Name,
+        labelOptions = labelOptions(
+          style = list(
+            "color" = "black",
+            "font-family" = "Arial",
+            "font-weight" = "bold",
+            "font-size" = "12px"
+          ),
+          textsize = "12px",
+          direction = "auto"
+        )
       )
-    ) |> addPolygons(
-      data = romania_ro,
-      stroke = TRUE,
-      color = "red",
-      opacity = 1,
-      fillOpacity = 0.3,
-      fillColor = "#444444",
-      weight = 1,
-      smoothFactor = 0.5,
-      group = "Romania",
-      highlightOptions = highlightOptions(
-        weight = 2,
-        color = "blue",
-        fillOpacity = 0.5,
-        bringToFront = TRUE
-      ),
-      label = ~Name,
-      labelOptions = labelOptions(
-        style = list(
-          "color" = "black",
-          "font-family" = "Arial",
-          "font-weight" = "bold",
-          "font-size" = "12px"
-        ),
-        textsize = "12px",
-        direction = "auto"
-      )
-    ) |>
-    addPolygons(
-      data = serbia_rs,
-      stroke = TRUE,
-      color = "red",
-      opacity = 1,
-      fillOpacity = 0.3,
-      fillColor = "#444444",
-      weight = 1,
-      smoothFactor = 0.5,
-      group = "Serbia",
-      highlightOptions = highlightOptions(
-        weight = 2,
-        color = "blue",
-        fillOpacity = 0.5,
-        bringToFront = TRUE
-      ),
-      label = ~Name,
-      labelOptions = labelOptions(
-        style = list(
-          "color" = "black",
-          "font-family" = "Arial",
-          "font-weight" = "bold",
-          "font-size" = "12px"
-        ),
-        textsize = "12px",
-        direction = "auto"
-      )
-    ) |>
+  }
+  
+  map <- map |>
     addLayersControl(
       baseGroups = c("CartoDB", "EsriWorldGray", "EsriWorldImagery"),
       overlayGroups = c("Labels","Danube","Austria", "Romania", "Serbia")) |> 
