@@ -187,13 +187,14 @@ observe({
 
     ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
   
+
     if (is.data.frame(ddf)) {
       if(!all(is.na(ddf$value))) {
         values_plot_na$input <- ddf
         values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
-      } else if (is.character(ddf)) {
+      } else {
         values_plot_na$input <- "No data available for the selected point"
-      }
+      } 
     } else {
         values_plot_na$input <- ddf
         
