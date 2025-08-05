@@ -119,7 +119,6 @@ observeEvent(input$test_area, {
 })
 
 
-
 output$map_titl <- renderText({
   param <- data_sel()$param_name
   season <- data_sel()$season_name
@@ -131,51 +130,83 @@ output$map_titl <- renderText({
 })
 
 # reactive values pentru plot lst time series din raster
-values_plot_na <- reactiveValues(input = NULL, title = NULL, cors = NULL)
+values_plot_na <- reactiveValues(input = NULL, title = NULL, lon = 25, lat = 46, mode = "point")
 
-observeEvent(list(input$param, input$scen, input$season, input$quant, input$period_change, input$period_climate),{
-  
-  if (is.null( values_plot_na$input)) {
-    lon = 25
-    lat = 46
+observeEvent(input$test_area, {
+  if (input$test_area %in% c("ro", "at", "rs")) {
+    values_plot_na$mode <- "zonal"
   } else {
-    lon = values_plot_na$lon
-    lat = values_plot_na$lat
+    values_plot_na$mode <- "point"
   }
-  
-  ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change, input$period_climate)
-  values_plot_na$input <- ddf
-  # title graphic
-  values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change,lon, lat)
-  
-  
-  values_plot_na$lon = lon
-  values_plot_na$lat = lat
 })
 
 # interactivitate raster
 observeEvent(input$map_click,{
-  proxy <- leafletProxy("map")
-  click <- input$map_click
-  
-  if (!is.null(click)) {
-    lon = click$lng
-    lat = click$lat
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
-    values_plot_na$input <- ddf
-    # title graphic
-    
-    values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
-    
-    
-    values_plot_na$lon = lon
-    values_plot_na$lat = lat
+  req(input$map_click)
+  # Do not trigger point extraction when a country is selected
+  if (input$test_area %in% 'drb') {
+    values_plot_na$mode <- "point"
+    values_plot_na$lon <- input$map_click$lng
+    values_plot_na$lat <- input$map_click$lat
   }
+})
+
+observe({
+  # Make it depend on all relevant inputs
+  req(input$param, input$scen, input$season, input$quant, input$period_change, input$period_climate, values_plot_na$mode)
+  
+  if (values_plot_na$mode == "zonal") {
+    req(input$test_area %in% c("ro", "at", "rs"))
+    shape_to_extract <- switch(
+      input$test_area,
+      "ro" = romania_ro,
+      "at" = austria_at,
+      "rs" = serbia_rs
+    )
+    
+    area_choices <- c("Danube River Basin" = "drb", "Romania" = "ro", "Austria" = "at", "Serbia" = "rs")
+    country_name <- names(area_choices)[area_choices == input$test_area]
+    
+    ddf <- extract_zonal_data(
+      file_hist = data_sel()$file_hist,
+      file_scen = data_sel()$file_scen,
+      shape = shape_to_extract,
+      season_subset = data_sel()$season_subset,
+      param = input$param,
+      quant = input$quant,
+      period_change = input$period_change
+    )
+    
+    values_plot_na$input <- ddf
+    values_plot_na$title <- paste( data_sel()$param_name, "for", country_name, "testa area")
+  } else {
+    lon <- values_plot_na$lon
+    lat <- values_plot_na$lat
+
+  
+
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
+  
+    if (is.data.frame(ddf)) {
+      if(!all(is.na(ddf$value))) {
+        values_plot_na$input <- ddf
+        values_plot_na$title <- graph_title_climate(data_sel()$param_name, input$quant, input$param, input$period_change, lon, lat)
+      } else if (is.character(ddf)) {
+        values_plot_na$input <- "No data available for the selected point"
+      }
+    } else {
+        values_plot_na$input <- ddf
+        
+      }
+
+  }
+  
 })
 
 
 output$chart_scen <- renderHighchart({ 
   data_input <- values_plot_na$input
+  
   param_name <- params_def$parm[params_def$input %in% input$param]
   col_line <- ifelse(input$param == "pr", "blue", "red")
   
