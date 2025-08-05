@@ -36,6 +36,31 @@ serbia_rs <- st_read("www/data/shps/vlasina_rs.gpkg", quiet = T)
 serbia_rs <- st_zm(serbia_rs)
 names(serbia_rs)[4] <- 'Name'
 
+# List of country data and their names
+country_layers <- list(
+    list(data = austria_at[1,], name =  paste("Austria -",austria_at$Name[1])),
+     list(data = austria_at[2,], name =  paste("Austria -",austria_at$Name[2])),
+     list(data = austria_at[3,], name =  paste("Austria -",austria_at$Name[3])),
+     list(data = austria_at[4,], name =  paste("Austria -",austria_at$Name[4])),
+     list(data = austria_at[5,], name =  paste("Austria -",austria_at$Name[5])),
+    list(data = romania_ro, name = paste("Romania -", romania_ro$Name)),
+    list(data = serbia_rs, name = paste("Serbia -", serbia_rs$Name))
+)
+
+select_area <- setNames(
+  c("drb", "at1", "at2", "at3", "at4", "at5", "ro", "rs"),
+  c(
+    "Danube River Basin",
+    paste("Austria -", austria_at$Name[1]),
+    paste("Austria -", austria_at$Name[2]),
+    paste("Austria -", austria_at$Name[3]),
+    paste("Austria -", austria_at$Name[4]),
+    paste("Austria -", austria_at$Name[5]),
+    paste("Romania -", romania_ro$Name),
+    paste("Serbia -", serbia_rs$Name)
+  )
+)
+
 
 select_seas <- read.csv("www/data/tabs/select_seas.csv")
 select_seas <- setNames(select_seas$choice, select_seas$parameter)
