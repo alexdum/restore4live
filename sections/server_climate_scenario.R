@@ -102,14 +102,18 @@ observeEvent(input$test_area, {
   req(input$test_area)
   
   shape_to_zoom <- switch(
-    input$test_area,
-    "drb" = dun,
-    "ro" = romania_ro,
-    "at" = austria_at,
-    "rs" = serbia_rs
-  )
-  
-  bbox <- sf::st_bbox(shape_to_zoom)
+  input$test_area,
+  "drb" = dun,
+  "at1" = austria_at[1, ],
+  "at2" = austria_at[2, ],
+  "at3" = austria_at[3, ],
+  "at4" = austria_at[4, ],
+  "at5" = austria_at[5, ],
+  "ro" = romania_ro,
+  "rs" = serbia_rs
+)
+
+bbox <- sf::st_bbox(shape_to_zoom)
   
   leafletProxy("map") %>%
     fitBounds(
@@ -133,7 +137,7 @@ output$map_titl <- renderText({
 values_plot_na <- reactiveValues(input = NULL, title = NULL, lon = 25, lat = 46, mode = "point")
 
 observeEvent(input$test_area, {
-  if (input$test_area %in% c("ro", "at", "rs")) {
+  if (input$test_area %in% c("ro", "rs", "at1", "at2", "at3", "at4", "at5")) {
     values_plot_na$mode <- "zonal"
   } else {
     values_plot_na$mode <- "point"
@@ -156,15 +160,19 @@ observe({
   req(input$param, input$scen, input$season, input$quant, input$period_change, input$period_climate, values_plot_na$mode)
   
   if (values_plot_na$mode == "zonal") {
-    req(input$test_area %in% c("ro", "at", "rs"))
+    req(input$test_area %in% c("ro", "rs", "at1", "at2", "at3", "at4", "at5"))
     shape_to_extract <- switch(
-      input$test_area,
-      "ro" = romania_ro,
-      "at" = austria_at,
-      "rs" = serbia_rs
-    )
+  input$test_area,
+  "at1" = austria_at[1, ],
+  "at2" = austria_at[2, ],
+  "at3" = austria_at[3, ],
+  "at4" = austria_at[4, ],
+  "at5" = austria_at[5, ],
+  "ro" = romania_ro,
+  "rs" = serbia_rs
+)
+    area_choices <- c("Danube River Basin" = "drb", "Romania" = "ro", "Austria" = "at1", "Austria" = "at2", "Austria" = "at3", "Austria" = "at4", "Serbia" = "rs")
     
-    area_choices <- c("Danube River Basin" = "drb", "Romania" = "ro", "Austria" = "at", "Serbia" = "rs")
     country_name <- names(area_choices)[area_choices == input$test_area]
     
     ddf <- extract_zonal_data(
