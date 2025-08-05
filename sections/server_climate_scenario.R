@@ -178,7 +178,7 @@ observe({
     )
     
     values_plot_na$input <- ddf
-    values_plot_na$title <- paste( data_sel()$param_name, "for", country_name, "testa area")
+    values_plot_na$title <- paste( data_sel()$param_name, "for", country_name, "test area",   toString(shape_to_extract$Name) )
   } else {
     lon <- values_plot_na$lon
     lat <- values_plot_na$lat
