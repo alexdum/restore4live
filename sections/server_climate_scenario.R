@@ -113,6 +113,8 @@ observeEvent(input$test_area, {
   "rs" = serbia_rs
 )
 
+shape_to_zoom <- sf::st_buffer(shape_to_zoom, dist = 10000) # buffer pentru a extinde aria de zoom
+
 bbox <- sf::st_bbox(shape_to_zoom)
   
   leafletProxy("map") %>%
