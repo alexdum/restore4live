@@ -113,11 +113,36 @@ observeEvent(input$test_area, {
   "rs" = serbia_rs
 )
 
-shape_to_zoom <- sf::st_buffer(shape_to_zoom, dist = 10000) # buffer pentru a extinde aria de zoom
+bbox <- sf::st_bbox(sf::st_buffer(shape_to_zoom, dist = 10000))
 
-bbox <- sf::st_bbox(shape_to_zoom)
-  
-  leafletProxy("map") %>%
+proxy <- leafletProxy("map") %>%
+    removeShape(layerId = "highlighted_polygon")
+
+if (input$test_area != "drb") {
+    proxy <- proxy %>%
+      addPolygons(
+        data = shape_to_zoom,
+        layerId = "highlighted_polygon",
+        fillColor = "yellow",
+        fillOpacity = 0.5,
+        color = "orange",
+        weight = 3,
+        stroke = TRUE,
+        label = ~Name,
+        labelOptions = labelOptions(
+          style = list(
+            "color" = "black",
+            "font-family" = "Arial",
+            "font-weight" = "bold",
+            "font-size" = "12px"
+          ),
+          textsize = "12px",
+          direction = "auto"
+        )
+      )
+  }
+
+proxy %>%
     fitBounds(
       lng1 = bbox[["xmin"]], lat1 = bbox[["ymin"]],
       lng2 = bbox[["xmax"]], lat2 = bbox[["ymax"]]
