@@ -54,7 +54,7 @@ leaflet_fun <- function() {
           fillOpacity = 0.5,
           bringToFront = TRUE
         ),
-        label = ~Name,
+        label = ~layer_info$name,
         labelOptions = labelOptions(
           style = list(
             "color" = "black",

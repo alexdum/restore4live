@@ -128,7 +128,10 @@ bbox <- sf::st_bbox(sf::st_buffer(shape_to_zoom, dist = 10000))
 proxy <- leafletProxy("map") %>%
     removeShape(layerId = "highlighted_polygon")
 
+ 
+
 if (input$test_area != "drb") {
+   print(shape_to_zoom)
     proxy <- proxy %>%
       addPolygons(
         data = shape_to_zoom,
@@ -138,7 +141,7 @@ if (input$test_area != "drb") {
         color = "orange",
         weight = 3,
         stroke = TRUE,
-        label = ~Name,
+        label = names(select_area[select_area == input$test_area]),
         labelOptions = labelOptions(
           style = list(
             "color" = "black",

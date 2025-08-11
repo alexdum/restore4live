@@ -50,7 +50,7 @@ country_layers <- list(
       list(data = ms1_germany, name = paste("MS1 Germany -",ms1_germany$Name)),
       list(data = ms2_slovakia, name = paste("MS2 Slovakia -",ms2_slovakia$Name)),
       list(data = ms3_serbia, name = paste("MS3 Serbia -",ms3_serbia$Name)),
-      list(data = ms4_romania.gpkg, name = paste("MS4 Romania -",ms4_romania$Name)),
+      list(data = ms4_romania, name = paste("MS4 Romania -",ms4_romania$Name)),
       list(data = ms5_romania, name = paste("MS5 Romania -",ms5_romania$Name)),
       list(data = ms6_romania, name = paste("MS6 Romania -",ms6_romania$Name))
 
