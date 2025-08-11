@@ -104,14 +104,24 @@ observeEvent(input$test_area, {
   shape_to_zoom <- switch(
   input$test_area,
   "drb" = dun,
-  "at1" = austria_at[1, ],
-  "at2" = austria_at[2, ],
-  "at3" = austria_at[3, ],
-  "at4" = austria_at[4, ],
-  "at5" = austria_at[5, ],
-  "ro" = romania_ro,
-  "rs" = serbia_rs
-)
+  "at1" = is1_austria[1, ],
+  "at2" = is1_austria[2, ],
+  "at3" = is1_austria[3, ],
+  "at4" = is1_austria[4, ],
+  "at5" = is1_austria[5, ],
+  "sk1" = is2_slovakia,
+  "rs1" = is3_serbia,
+  "ro1" = is4_romania,
+  "de1" = ms1_germany,
+  "sk2" = ms2_slovakia,
+  "rs2" = ms3_serbia,
+  "ro2" = ms4_romania,
+  "ro3" = ms5_romania,
+  "ro4" = ms6_romania   
+  
+
+  )
+
 
 bbox <- sf::st_bbox(sf::st_buffer(shape_to_zoom, dist = 10000))
 
@@ -164,7 +174,7 @@ output$map_titl <- renderText({
 values_plot_na <- reactiveValues(input = NULL, title = NULL, lon = 25, lat = 46, mode = "point")
 
 observeEvent(input$test_area, {
-  if (input$test_area %in% c("ro", "rs", "at1", "at2", "at3", "at4", "at5")) {
+  if (input$test_area %in% c( "at1", "at2", "at3", "at4", "at5", "sk1", "rs1","ro1","de1","sk2", "rs2", "ro2", "ro3", "ro4")) {
     values_plot_na$mode <- "zonal"
   } else {
     values_plot_na$mode <- "point"
@@ -187,18 +197,29 @@ observe({
   req(input$param, input$scen, input$season, input$quant, input$period_change, input$period_climate, values_plot_na$mode)
   
   if (values_plot_na$mode == "zonal") {
-    req(input$test_area %in% c("ro", "rs", "at1", "at2", "at3", "at4", "at5"))
+    req(input$test_area %in%  c("drb", "at1", "at2", "at3", "at4", "at5", "sk1", "rs1", "ro1", "de1", "sk2", "rs2","ro2", "ro3", "ro4"))
     shape_to_extract <- switch(
   input$test_area,
-  "at1" = austria_at[1, ],
-  "at2" = austria_at[2, ],
-  "at3" = austria_at[3, ],
-  "at4" = austria_at[4, ],
-  "at5" = austria_at[5, ],
-  "ro" = romania_ro,
-  "rs" = serbia_rs
+  "at1" = is1_austria[1, ],
+  "at2" = is1_austria[2, ],
+  "at3" = is1_austria[3, ],
+  "at4" = is1_austria[4, ],
+  "at5" = is1_austria[5, ],
+  "sk1" = is2_slovakia,
+  "rs1" = is3_serbia,
+  "ro1" = is4_romania,
+  "de1" = ms1_germany,
+  "sk2" = ms2_slovakia,
+  "rs2" = ms3_serbia,
+  "ro2" = ms4_romania,
+  "ro3" = ms5_romania,
+  "ro4" = ms6_romania
+
+
+  
 )
-    area_choices <- c("Danube River Basin" = "drb", "Romania" = "ro", "Austria" = "at1", "Austria" = "at2", "Austria" = "at3", "Austria" = "at4", "Serbia" = "rs")
+    area_choices <- c("Danube River Basin" = "drb", "Austria" = "at1", "Austria" = "at2", "Austria" = "at3", "Austria" = "at4", "Slovakia" = "sk1", "Serbia" = "rs1", "Romania" = "ro1", "Germany" = "de1",
+    "Slovakia" = "sk2", "Serbia" = "rs2", "Romania" = "ro2", "Romania" = "ro3", "Romania" = "ro4")
     
     country_name <- names(area_choices)[area_choices == input$test_area]
     
