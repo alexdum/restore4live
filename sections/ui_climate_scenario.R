@@ -9,7 +9,8 @@ climate_scenario_sidebar <- list(
     c("Mean temperature" = "tas",
       "Maximum temperature" = "tasmax",
       "Minimum temperature" = "tasmin",
-      "Precipitation" = "pr")),
+      "Precipitation" = "pr",
+      "Tropical nights" = "tr")),
   selectInput(
     "quant", 
     span(
@@ -34,11 +35,23 @@ climate_scenario_sidebar <- list(
       "SSP2" = "ssp2",
       "SSP3" = "ssp3",
       "SSP5" = "ssp5")),
-  selectInput(
+
+  # dipslay only annual if indices are selected
+  conditionalPanel(
+    condition = "input.param == 'tr'",
+    selectInput(inputId = "season_ind", label = "Season", 
+    choices = c("Annual" = "ANN")
+  )
+),
+    # display seasons if no indices are selected
+  conditionalPanel(
+    condition = "input.param != 'tr'",
+    selectInput(
     inputId = "season",
     label = "Season",
     choices = select_seas,
-    selected =  select_seas[17]),
+    selected =  select_seas[17])
+  ),
   # afiseaza inputul conditional
   conditionalPanel(
     condition = "input.quant == 'climate'",

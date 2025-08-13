@@ -1,6 +1,8 @@
 data_sel <- reactive({
   
   param <- input$param
+
+  if (input$param %in% c("tas", "tasmax", "tasmin", "pr")) {
   
   season <- strsplit(input$season, "-")[[1]][2]
   season_subset <- strsplit(input$season, "-")[[1]][1]
@@ -10,12 +12,29 @@ data_sel <- reactive({
   file_scen <- grep(paste0("www/data/ncs/cmip6/",input$param,"/",input$scen,"/",input$param,"_",input$scen,"_",season, "-50_"), files_cmip6, value = T)
   r <- c(rast(file_hist), rast(file_scen))
   dats <- time(r)
+    
+  file_ind <- NA 
+  } else {
+
+    file_ind <- paste0("www/data/ncs/cmip6/indices/",input$param,"_",input$season_ind,"_",input$scen,"_1961-2100_ensmean.nc")
+    r <-  rast( file_ind )
+    dats <- seq(as.Date("1961-07-01"), as.Date("2100-07-01"),'year')
+    time(r) <- dats
+  
+
+    file_hist <- r[[format(dats, "%Y") %in% 1961:2014]]
+    file_scen <- r[[format(dats, "%Y") %in% 2015:2100]]
+
+    season_subset <- input$season_ind
+    
+  }
   
   # subseteaza sezoniere si lunare
-  if (season_subset != "year") r <- r[[which(format(dats, "%m") %in% season_subset)]]
+  if (!season_subset %in% c("ANN","year")) r <- r[[which(format(dats, "%m") %in% season_subset)]]
   
   # pentru subsetare harta
   dats_sub <- time(r)
+
   
   # pentru selectie tip de calcul
   if (input$quant %in% "climate") {
@@ -24,8 +43,10 @@ data_sel <- reactive({
     an1 <- strsplit(input$period_climate, "-")[[1]][1] |> as.numeric()
     an2 <- strsplit(input$period_climate, "-")[[1]][2] |> as.numeric()
     
+  
     # mediaza duop input perioada
     r_mean <- mean(r[[format(dats_sub, "%Y") %in% an1:an2]])
+ 
     
     setMinMax(r_mean)
     
@@ -66,9 +87,9 @@ data_sel <- reactive({
   season_name <- names(select_seas[select_seas %in% input$season])
   
   list(r = r_mean, pal = pal, min_max = minmax(r_mean), opacy = input$transp, file_hist = file_hist, file_scen = file_scen,
-       season_subset = season_subset, param_name = param_name, season_name = season_name)
+       season_subset = season_subset, param_name = param_name, season_name = season_name, file_ind = file_ind)
   
-}) 
+  }) 
 
 
 
@@ -233,7 +254,8 @@ observe({
       season_subset = data_sel()$season_subset,
       param = input$param,
       quant = input$quant,
-      period_change = input$period_change
+      period_change = input$period_change,
+      file_ind = data_sel()$file_ind
     )
     
     values_plot_na$input <- ddf
@@ -244,7 +266,7 @@ observe({
 
   
 
-    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate)
+    ddf <- extract_data(data_sel()$file_hist, data_sel()$file_scen, extract_point, lon, lat, input$param, data_sel()$season_subset,input$quant, input$period_change,input$period_climate,  data_sel()$file_ind)
   
 
     if (is.data.frame(ddf)) {
