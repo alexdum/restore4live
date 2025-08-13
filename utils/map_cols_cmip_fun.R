@@ -5,6 +5,8 @@ colintRdYlBu <- colorRampPalette(brewer.pal(10,"RdYlBu"),interpolate = "linear")
 colintBlues <- colorRampPalette(brewer.pal(9,"Blues"), interpolate = "linear")
 colintReds <- colorRampPalette(brewer.pal(9,"Reds"), interpolate = "linear")
 colintBrBG <- colorRampPalette(brewer.pal(11,"BrBG"),interpolate = "linear")
+colintGreens <- colorRampPalette(brewer.pal(9,"YlGn"), interpolate = "linear")
+
 cols_tr <- c("#ffe500","#ffcc00","#ffad00","#ff9900","#ff7f00","#FF4E00","#F23A00","#E42700","#D81300","#CB0000","#A62137","#9D3673","#813986","#532B6E")
 
 map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
@@ -98,6 +100,24 @@ map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
       df.col <- data.frame(
         cols = c(rev(colintReds(11)), colintBlues(10)), 
         vals = -10:10
+      )
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+    }
+    
+  }
+  if (indic %in% c("gsl")) { # pentru toate temperaturile
+    
+    if (type %in% "climate") {
+      df.col <- data.frame(
+        cols = colintGreens(13), 
+        vals = seq(50, 350, by = 25)						
+      ) 
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+      
+    } else {
+      df.col <- data.frame(
+        cols = colintBrBG(13), 
+        vals = c(-50, -40,-30,-20,-10,-5, 0,5,10,20,30,40,50)
       )
       leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
     }
