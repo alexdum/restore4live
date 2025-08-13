@@ -3,3 +3,4 @@ Mean temperature,tas
 Mean of daily maximum temperature,tasmax
 Mean of daily minimum temperature,tasmin
 Precipitation,pr
+Number of tropical nights (annual count of days when daily minimum temperature > 20 Celsius),tr
