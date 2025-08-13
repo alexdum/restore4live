@@ -66,6 +66,43 @@ map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
     }
     
   }
+
+  if (indic %in% c("wsdi")) { # pentru toate temperaturile
+    
+    if (type %in% "climate") {
+      df.col <- data.frame(
+        cols = cols_tr, 
+        vals = c(0,5,10,20,30,35,40,45,50,60,70,80,90,100)							
+      ) 
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+      
+    } else {
+      df.col <- data.frame(
+        cols = c(rev(colintBlues(2)),colintReds(16)), 
+        vals = c(-10, -5, 0,5,10,15,20,25,30,35,40,45,50,60,70,80,90,100)
+      )
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+    }
+  }
+
+    if (indic %in% c("csdi")) { # pentru toate temperaturile
+    
+    if (type %in% "climate") {
+      df.col <- data.frame(
+        cols = colintBlues(12), 
+        vals = c(1:10, 20,50)							
+      ) 
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+      
+    } else {
+      df.col <- data.frame(
+        cols = c(rev(colintReds(11)), colintBlues(10)), 
+        vals = -10:10
+      )
+      leaflet_titleg <- paste0("<html>", gsub(",","",toString(rep("&nbsp;", 5))), "days","</html>")
+    }
+    
+  }
   
 
   # print(head(df.col))
