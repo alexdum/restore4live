@@ -15,6 +15,8 @@ library(dplyr)
 source_python("utils/extract_points.py") 
 
 source("utils/leaflet_fun.R", local = T)
+source("utils/prepare_climate_data.R", local = T)
+source("utils/create_timeseries_chart.R", local = T)
 source("utils/map_cols_cmip_fun.R", local = T)
 source("utils/extract_data.R", local = T) # functie pentru extragere date din netcdf
 source("utils/extract_zonal.R", local = T) # functie pentru extragere date zonale
