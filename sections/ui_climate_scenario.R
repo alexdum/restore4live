@@ -43,7 +43,7 @@ climate_scenario_sidebar <- list(
 
   # dipslay only annual if indices are selected
   conditionalPanel(
-  condition = "['gsl','tr','wdsi','csdi'].includes(input.param)",
+  condition = "['gsl','tr','wsdi','csdi'].includes(input.param)",
   selectInput(
     inputId = "season_ind",
     label = "Season",
@@ -52,7 +52,7 @@ climate_scenario_sidebar <- list(
 ),
     # display seasons if no indices are selected
   conditionalPanel(
-  condition = "!['gsl','tr','wdsi','csdi'].includes(input.param)",
+  condition = "!['gsl','tr','wsdi','csdi'].includes(input.param)",
   selectInput(
     inputId = "season",
     label = "Season",
@@ -132,5 +132,3 @@ climate_scenario <-
       )
     )
   )
-
-
