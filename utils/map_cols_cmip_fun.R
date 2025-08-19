@@ -128,6 +128,21 @@ map_cols_cmip_fun <- function(indic = NA, type = NA,  domain = NA) {
   # print(head(df.col))
   # print(domain)
   ints <- findInterval(domain, df.col$vals, rightmost.closed = T, left.open = F)
+
+  # If the domain is entirely below the first value, findInterval returns 0 for both min and max.
+  # This causes an issue with bin creation, as it results in a single bin.
+  # We adjust `ints` to span the first interval, ensuring at least two bins.
+  if (all(ints == 0)) {
+    ints <- c(0, 1)
+  }
+  
+  
+  # If the domain is entirely below the first value, findInterval returns 0 for both min and max.
+  # This causes an issue with bin creation, as it results in a single bin.
+  # We adjust `ints` to span the first interval, ensuring at least two bins.
+  if (all(ints == 0)) {
+    ints <- c(0, 1)
+  }
   
   bins <-  df.col$vals[ints[1]:(ints[2] + 1)]
   cols <- df.col$cols[ints[1]:(ints[2])]
