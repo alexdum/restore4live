@@ -1,5 +1,5 @@
 prepare_climate_data <- function(param, season, season_ind, scen, quant, period_climate, period_change, transp,
-                                 files_cmip6, params_def, select_seas) {
+                                files_cmip6, params_def, select_seas) {
   
   if (param %in% c("tas", "tasmax", "tasmin", "pr")) {
     
