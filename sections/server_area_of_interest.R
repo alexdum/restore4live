@@ -65,7 +65,6 @@ all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventRe
           params_def = params_def,
           select_seas = select_seas
         )
-        if(is.character(data_prepared$file_hist)) print(data_prepared$file_hist)
         
  
         # Extract zonal data
