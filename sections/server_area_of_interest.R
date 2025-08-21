@@ -19,7 +19,7 @@ get_shape_for_aoi <- function(aoi_id) {
 }
 
 # Reactive that prepares all dataframes when the area changes
-all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventReactive
+all_plots_data <- eventReactive(input$aoi_area, {
   req(input$aoi_area)
 
   id <- showNotification("Preparing data for all plots...", duration = NULL, closeButton = FALSE, type = "message")
@@ -36,8 +36,6 @@ all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventRe
   for (i in 1:nrow(aoi_params_df)) {
     param_code <- aoi_params_df$param[i]
 
-    # For annual timeseries, indices use `season_ind`, while other parameters use `season`.
-    # We need to set the correct arguments for prepare_climate_data based on the parameter.
     if (param_code %in% climate_indices) {
       season_arg <- NULL
       season_ind_arg <- "ANN"
@@ -49,25 +47,21 @@ all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventRe
     for (scen_code in aoi_scenarios) {
       plot_id <- paste(param_code, scen_code, sep = "_")
 
-      # Wrap in a try block because not all parameter/scenario combinations may exist.
-      # This prevents the app from crashing if a file is not found by prepare_climate_data.
       ddf <- try({
         data_prepared <- prepare_climate_data(
           param = param_code,
           season = season_arg,
           season_ind = season_ind_arg,
           scen = scen_code,
-          quant = "climate", # We need timeseries data, which is under the "climate" quantity
-          period_climate = "2081-2100", # Dummy value, required by the function but not used for timeseries file paths
-          period_change = c("1981-2010", "2041-2060"), # Dummy value
-          transp = 0.8, # Dummy value
+          quant = "climate",
+          period_climate = "2081-2100",
+          period_change = c("1981-2010", "2041-2060"),
+          transp = 0.8,
           files_cmip6 = files_cmip6,
           params_def = params_def,
           select_seas = select_seas
         )
         
- 
-        # Extract zonal data
         extract_zonal_data(
           file_hist = data_prepared$file_hist,
           file_scen = data_prepared$file_scen,
@@ -75,7 +69,7 @@ all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventRe
           season_subset = data_prepared$season_subset,
           param = param_code,
           quant = "climate",
-          period_change = c("1981-2010", "2041-2060"), # Dummy
+          period_change = c("1981-2010", "2041-2060"),
           file_ind = data_prepared$file_ind
         )
       }, silent = TRUE)
@@ -87,16 +81,17 @@ all_plots_data <- eventReactive(input$aoi_area, { # TODO: This should be eventRe
   data_list
 })
 
-# Render the UI grid
+# --- MODIFIED SECTION ---
+# Render the UI grid with open cards for each scenario
 output$aoi_plots_grid <- renderUI({
   req(input$aoi_area)
   
-  # Create a list of cards, one for each parameter
-  param_cards <- lapply(1:nrow(aoi_params_df), function(i) {
+  # Create a list of UI sections, one for each parameter
+  parameter_sections <- lapply(1:nrow(aoi_params_df), function(i) {
     param_code <- aoi_params_df$param[i]
     param_name <- aoi_params_df$name[i]
     
-    # Create a list of plot outputs for the 4 scenarios
+    # Create a list of individual plot cards for the 4 scenarios
     plot_outputs <- lapply(aoi_scenarios, function(scen_code) {
       output_id <- paste("aoi_plot", param_code, scen_code, sep = "_")
       card(
@@ -105,21 +100,22 @@ output$aoi_plots_grid <- renderUI({
       )
     })
     
-    # Arrange the 4 plots into a card for the parameter
-    card(
-      full_screen = TRUE,
-      card_header(h5(param_name)),
-      card_body(
-        layout_columns(
-          col_widths = c(6, 6, 6, 6),
-          !!!plot_outputs
-        )
-      )
+    # For each parameter, return a header followed by the grid of scenario plots
+    # This removes the single collapsible parent card
+    tagList(
+      h3(param_name, style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      layout_columns(
+        col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
+        !!!plot_outputs
+      ),
+      hr(style = "margin-top: 20px;") # Adds a line to separate parameter groups
     )
   })
   
-  tagList(param_cards)
+  # Combine all parameter sections into a single UI
+  tagList(parameter_sections)
 })
+# --- END OF MODIFIED SECTION ---
 
 # Render the individual plots
 observeEvent(all_plots_data(), {
@@ -147,3 +143,71 @@ observeEvent(all_plots_data(), {
     })
   }
 })
+
+# Handler for downloading the report
+output$download_aoi_report <- downloadHandler(
+  filename = function() {
+    format <- if (is.null(input$report_format)) "html" else input$report_format
+    ext <- switch(format,
+                  html = ".html",
+                  docx = ".docx",
+                  ".html") # Default to .html
+    paste0("report-", input$aoi_area, "-", Sys.Date(), ext)
+  },
+  content = function(file) {
+    id <- showNotification(
+      "Generating report...",
+      duration = NULL,
+      closeButton = FALSE,
+      type = "message"
+    )
+    on.exit(removeNotification(id))
+
+    # --- CLEAN the data going into the report ---
+    clean_plot_data <- lapply(all_plots_data(), function(x) {
+      if (inherits(x, "try-error") || is.null(x) || !is.data.frame(x)) {
+        return(data.frame(
+          date = as.Date(character()),
+          value = numeric(0),
+          value10 = numeric(0),
+          value90 = numeric(0)
+        ))
+      }
+      req_cols <- c("date", "value", "value10", "value90")
+      missing <- setdiff(req_cols, names(x))
+      for (nm in missing) {
+        x[[nm]] <- numeric(0)
+      }
+      x
+    })
+
+    # Build local params with plain R objects
+    local_params <- list(
+      area_name = names(select_area[select_area == input$aoi_area]),
+      plot_data = clean_plot_data,
+      aoi_params = as.data.frame(aoi_params_df, stringsAsFactors = FALSE),
+      aoi_scenarios = as.character(aoi_scenarios),
+      params_def = as.data.frame(params_def, stringsAsFactors = FALSE)
+    )
+
+    # Copy Rmd template to a temporary directory for rendering
+    temp_report <- file.path(tempdir(), "report_template.Rmd")
+    file.copy("sections/report_template.Rmd", temp_report, overwrite = TRUE)
+
+    # Determine the output format
+    format <- if (is.null(input$report_format)) "html" else input$report_format
+    output_format <- switch(format,
+                           html = "html_document",
+                           docx = "word_document",
+                           "html_document") # Default to html
+
+    # Render the RMarkdown report
+    rmarkdown::render(
+      input = temp_report,
+      output_file = file,
+      output_format = output_format,
+      params = local_params,
+      envir = new.env(parent = globalenv())
+    )
+  }
+)

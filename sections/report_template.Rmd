@@ -1,0 +1,115 @@
+---
+title: "Climate Scenarios Report for Area of Interest"
+output:
+  html_document:
+    css: style.css
+  word_document: default
+params:
+  area_name: "Default Area"
+  plot_data: NULL
+  aoi_params: NULL
+  aoi_scenarios: NULL
+  params_def: NULL
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(ggplot2)
+library(dplyr)
+```
+# Report for `r params$area_name`
+
+This report shows the annual time series plots for various climate parameters and scenarios for the selected area of interest.
+
+```{r generate_plots, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
+  knitr::asis_output(
+    "<p><em>No climate parameters were selected for this report.</em></p>"
+  )
+} else {
+  # Loop through each parameter (e.g., Temperature, Precipitation)
+  for (i in seq_len(nrow(params$aoi_params))) {
+    param_code <- params$aoi_params$param[i]
+    param_name <- params$aoi_params$name[i]
+
+    # --- Data Aggregation for Faceting ---
+    # 1. Collect data for all scenarios for the current parameter into a single data frame.
+    all_scenarios_data <- lapply(params$aoi_scenarios, function(scen_code) {
+      plot_id <- paste(param_code, scen_code, sep = "_")
+      df <- params$plot_data[[plot_id]]
+      
+      # Ensure data is valid and add a 'scenario' column for faceting
+      if (is.data.frame(df) && nrow(df) > 0 && !all(is.na(df$value))) {
+        df$scenario <- toupper(scen_code) # Add scenario column for faceting
+        return(df)
+      }
+      return(NULL) # Return NULL for scenarios with no data
+    })
+    
+    # 2. Combine the list of data frames into one.
+    combined_df <- dplyr::bind_rows(all_scenarios_data)
+
+    # --- Plot Generation with facet_wrap ---
+    # Proceed only if there's data to plot for at least one scenario
+    if (is.data.frame(combined_df) && nrow(combined_df) > 0) {
+      
+      # Define the Y-axis label using parameter name and unit
+      param_info <- dplyr::filter(params$params_def, input == param_code)
+      y_label <- param_name # Fallback to param_name
+      if (nrow(param_info) > 0 && "unit" %in% colnames(param_info)) {
+        unit <- param_info$unit[1]
+        if (is.character(unit) && !is.na(unit) && nzchar(trimws(unit))) {
+          y_label <- unit
+        }
+      }
+      
+      # Ensure 'date' column is a numeric year for x-axis
+      if ("date" %in% colnames(combined_df)) {
+        # We assume 'date' can be coerced to a Date object to extract the year.
+        combined_df <- combined_df %>%
+          mutate(date = as.numeric(format(as.Date(date), "%Y")))
+      }
+
+      # 3. Create a single ggplot object with facets for each scenario
+      p <- ggplot(combined_df, aes(x = date)) +
+        # Add the 10th-90th percentile band
+        geom_ribbon(aes(ymin = value10, ymax = value90), fill = "grey70", alpha = 0.5) +
+        # Plot the main time series line
+        geom_line(aes(y = value), color = "steelblue") +
+        # Add a linear trendline
+        geom_smooth(aes(y = value), method = "lm", se = FALSE, color = "firebrick", linetype = "dashed", linewidth = 0.75) +
+        # Create panels by scenario
+        facet_wrap(~scenario, ncol = 2) +
+        scale_x_continuous(breaks = scales::pretty_breaks()) +
+        labs(
+          title = stringr::str_wrap(param_name), # Main title for the entire faceted plot
+          x = "Year",
+          y = y_label
+        ) +
+        theme_minimal(base_size = 12) +
+        theme(
+          plot.title = element_text(hjust = 0.5, size = 14),
+          strip.text = element_text(size = 12), # Facet labels (e.g., "SSP1")
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9)
+        )
+      
+      # Print the combined plot
+      print(p)
+
+    } else {
+      # Fallback message if no data exists for this parameter across all scenarios
+      knitr::asis_output(paste0("## ", param_name, "\n\n"))
+      knitr::asis_output(
+        paste0("<p><em>Data not available for ", param_name, ".</em></p>")
+      )
+    }
+
+    # Add a horizontal rule between parameter sections
+    if (i < nrow(params$aoi_params)) {
+      knitr::asis_output("\n<hr/>\n\n")
+    }
+  }
+}
+
+```
