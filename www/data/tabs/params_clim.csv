@@ -1,9 +1,0 @@
-parm,input
-Mean temperature,tas
-Mean of daily maximum temperature,tasmax
-Mean of daily minimum temperature,tasmin
-Precipitation,pr
-Number of tropical nights (annual count of days when daily minimum temperature > 20 Celsius),tr
-Warm spell duration index: annual count of days with at least 6 consecutive days when maximum temperature > 90th percentile,wsdi
-Cold spell duration index: annual count of days with at least 6 consecutive days when minimum temperature < 10th percentile,csdi
-Growing season length: annual count between the first span of at least 6 days with daily mean temperature TG >5 Celsius and the first span after July 1st  of 6 days with TG <5 Celsius,gsl
