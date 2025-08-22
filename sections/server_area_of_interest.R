@@ -95,8 +95,15 @@ observeEvent(input$aoi_map_draw_new_feature, {
   feature <- input$aoi_map_draw_new_feature
   # Convert drawn feature to sf object
   drawn_sf <- sf::st_read(jsonlite::toJSON(feature$geometry, auto_unbox = TRUE), quiet = TRUE)
-  drawn_polygon_sf(drawn_sf)
-  showNotification("Polygon drawn successfully! Data will be prepared using this area.", type = "message")
+  
+  # Check for overlap with Danube basin
+  if (any(sf::st_intersects(drawn_sf, dun, sparse = FALSE))) {
+    drawn_polygon_sf(drawn_sf)
+    showNotification("Polygon drawn successfully! Data will be prepared using this area.", type = "message")
+  } else {
+    showNotification("Error: Your drawn area must overlap with the Danube Basin. Please draw a new area.", type = "error", duration = 10)
+    # Optionally, clear the drawn feature from the map if possible, though not directly supported by shinyjs
+  }
 })
 
 # Observe deleted features (clear the drawn polygon)
