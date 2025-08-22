@@ -2,6 +2,7 @@ library(shiny)
 library(bslib)
 library(bsicons)
 library(leaflet)
+library(leaflet.extras)
 library(sf)
 library(terra)
 library(highcharter)
@@ -9,6 +10,7 @@ library(RColorBrewer)
 library(shinyWidgets)
 library(reticulate)
 library(dplyr)
+library(shinyjs)
 
 
 
