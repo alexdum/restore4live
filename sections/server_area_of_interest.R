@@ -48,7 +48,6 @@ output$aoi_map <- renderLeaflet({
       )
     ) %>%
     addLayersControl(
-      overlayGroups = c("drawn_aoi"),
       options = layersControlOptions(collapsed = FALSE)
     ) %>%
     addStyleEditor() # For debugging/styling if needed
@@ -290,3 +289,16 @@ output$download_aoi_report <- downloadHandler(
     )
   }
 )
+
+# Reactive expression for the selected area's display name
+output$selected_area_display_name <- renderUI({
+  if (input$aoi_selection_method == "predefined") {
+    req(input$aoi_area)
+    h5(names(select_area[select_area == input$aoi_area]))
+  } else if (input$aoi_selection_method == "draw") {
+    req(drawn_polygon_sf())
+    h5("User Drawn Area")
+  } else {
+    NULL
+  }
+})

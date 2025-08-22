@@ -8,7 +8,7 @@ area_of_interest_ui <- layout_sidebar(
       selected = "predefined"
     ),
     uiOutput("aoi_predefined_selection_ui"), # Placeholder for conditional UI
-    uiOutput("aoi_map_ui"), # Placeholder for conditional UI
+    
     radioButtons(
       "report_format",
       label = "Select Report Format:",
@@ -28,6 +28,8 @@ area_of_interest_ui <- layout_sidebar(
       )
     )
   ),
+  card(uiOutput("aoi_map_ui")), # Placeholder for conditional UI on a acard on top of the page
   # A placeholder for the dynamic grid of plots
+  uiOutput("selected_area_display_name"),
   uiOutput("aoi_plots_grid")
 )
