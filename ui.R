@@ -4,6 +4,7 @@ ui <-
   page_navbar(
     title = "Danube basin",
     fillable_mobile = T,
+   shinyjs::useShinyjs(),
    # selected = "About",
     nav_panel(
       title = "Climate scenario",

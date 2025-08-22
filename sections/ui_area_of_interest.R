@@ -8,7 +8,9 @@ area_of_interest_ui <- layout_sidebar(
       selected = "predefined"
     ),
     uiOutput("aoi_predefined_selection_ui"), # Placeholder for conditional UI
-    
+    div(id = "clear_drawn_area_div",
+        actionButton("clear_drawn_area", "Draw New Area", class = "btn-warning w-100 mb-3")
+    ),
     radioButtons(
       "report_format",
       label = "Select Report Format:",
@@ -28,7 +30,10 @@ area_of_interest_ui <- layout_sidebar(
       )
     )
   ),
-  card(uiOutput("aoi_map_ui")), # Placeholder for conditional UI on a acard on top of the page
+  card(id = "aoi_map_card",
+       leafletOutput("aoi_map", height = "400px"),
+       helpText("Draw a polygon on the map to define your area of interest. Only the last drawn polygon will be used.")
+  ),
   # A placeholder for the dynamic grid of plots
   uiOutput("selected_area_display_name"),
   uiOutput("aoi_plots_grid")

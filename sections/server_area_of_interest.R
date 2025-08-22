@@ -15,14 +15,31 @@ output$aoi_predefined_selection_ui <- renderUI({
   )
 })
 
-# Conditional UI for map drawing
-output$aoi_map_ui <- renderUI({
-  req(input$aoi_selection_method == "draw")
-  tagList(
-    leafletOutput("aoi_map", height = "400px"),
-    helpText("Draw a polygon on the map to define your area of interest. Only the last drawn polygon will be used.")
-  )
+observeEvent(input$aoi_selection_method, {
+  if (input$aoi_selection_method == "draw") {
+    shinyjs::show("aoi_map_card")
+    shinyjs::show("clear_drawn_area_div")
+  } else {
+    shinyjs::hide("aoi_map_card")
+    shinyjs::hide("clear_drawn_area_div")
+  }
 })
+
+observeEvent(input$aoi_selection_method, {
+  if (input$aoi_selection_method == "draw") {
+    # Clear any previously drawn polygon when "Draw on Map" is selected
+    drawn_polygon_sf(NULL)
+  }
+}, ignoreInit = TRUE)
+
+observeEvent(input$clear_drawn_area, {
+  # Clear the drawn polygon when the "Draw New Area" button is clicked
+  drawn_polygon_sf(NULL)
+  showNotification("Previous drawing cleared. You can now draw a new area.", type = "message")
+})
+
+# Conditional UI for map drawing
+
 
 # Reactive value to store the drawn polygon
 drawn_polygon_sf <- reactiveVal(NULL)
@@ -33,6 +50,7 @@ output$aoi_map <- renderLeaflet({
   leaflet() %>%
     addTiles() %>%
     setView(lng = 15, lat = 48, zoom = 5) %>%
+    
     addDrawToolbar(
       targetGroup = "drawn_aoi",
       polylineOptions = FALSE,
@@ -48,6 +66,7 @@ output$aoi_map <- renderLeaflet({
       )
     ) %>%
     addLayersControl(
+      overlayGroups = c("drawn_aoi", "Danube Basin"),
       options = layersControlOptions(collapsed = FALSE)
     ) %>%
     addStyleEditor() # For debugging/styling if needed
