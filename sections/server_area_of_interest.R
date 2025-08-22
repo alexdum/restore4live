@@ -65,6 +65,15 @@ output$aoi_map <- renderLeaflet({
         remove = TRUE # Allow removing shapes
       )
     ) %>%
+    addPolygons(
+      data = dun,
+      fillColor = "blue",
+      color = "blue",
+      weight = 2,
+      fillOpacity = 0.2,
+      group = "Danube Basin",
+      popup = "Danube River Basin"
+    ) %>%
     addLayersControl(
       overlayGroups = c("drawn_aoi", "Danube Basin"),
       options = layersControlOptions(collapsed = FALSE)
