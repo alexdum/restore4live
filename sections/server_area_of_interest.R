@@ -4,6 +4,71 @@
 aoi_params_df <- setNames(params_def[, c("input", "parm")], c("param", "name"))
 aoi_scenarios <- c("ssp1", "ssp2", "ssp3", "ssp5")
 
+# Conditional UI for predefined area selection
+output$aoi_predefined_selection_ui <- renderUI({
+  req(input$aoi_selection_method == "predefined")
+  selectInput(
+    inputId = "aoi_area",
+    label = "Select an area:",
+    choices = select_area,
+    selected = "at1"
+  )
+})
+
+# Conditional UI for map drawing
+output$aoi_map_ui <- renderUI({
+  req(input$aoi_selection_method == "draw")
+  tagList(
+    leafletOutput("aoi_map", height = "400px"),
+    helpText("Draw a polygon on the map to define your area of interest. Only the last drawn polygon will be used.")
+  )
+})
+
+# Reactive value to store the drawn polygon
+drawn_polygon_sf <- reactiveVal(NULL)
+
+# Render the Leaflet map with drawing tools
+output$aoi_map <- renderLeaflet({
+  req(input$aoi_selection_method == "draw")
+  leaflet() %>%
+    addTiles() %>%
+    setView(lng = 15, lat = 48, zoom = 5) %>%
+    addDrawToolbar(
+      targetGroup = "drawn_aoi",
+      polylineOptions = FALSE,
+      polygonOptions = drawPolygonOptions(shapeOptions = drawShapeOptions(fillOpacity = 0.4, weight = 2)),
+      circleOptions = FALSE,
+      rectangleOptions = FALSE,
+      markerOptions = FALSE,
+      circleMarkerOptions = FALSE,
+      editOptions = editToolbarOptions(
+        selectedPathOptions = selectedPathOptions(),
+        edit = FALSE, # Disable editing existing shapes
+        remove = TRUE # Allow removing shapes
+      )
+    ) %>%
+    addLayersControl(
+      overlayGroups = c("drawn_aoi"),
+      options = layersControlOptions(collapsed = FALSE)
+    ) %>%
+    addStyleEditor() # For debugging/styling if needed
+})
+
+# Observe drawn features
+observeEvent(input$aoi_map_draw_new_feature, {
+  feature <- input$aoi_map_draw_new_feature
+  # Convert drawn feature to sf object
+  drawn_sf <- sf::st_read(jsonlite::toJSON(feature$geometry, auto_unbox = TRUE), quiet = TRUE)
+  drawn_polygon_sf(drawn_sf)
+  showNotification("Polygon drawn successfully! Data will be prepared using this area.", type = "message")
+})
+
+# Observe deleted features (clear the drawn polygon)
+observeEvent(input$aoi_map_draw_deleted_features, {
+  drawn_polygon_sf(NULL)
+  showNotification("Drawn polygon cleared.", type = "message")
+})
+
 # Helper to get the sf object for the selected area
 get_shape_for_aoi <- function(aoi_id) {
   switch(
@@ -19,13 +84,19 @@ get_shape_for_aoi <- function(aoi_id) {
 }
 
 # Reactive that prepares all dataframes when the area changes
-all_plots_data <- eventReactive(input$aoi_area, {
-  req(input$aoi_area)
-
+all_plots_data <- eventReactive(list(input$aoi_selection_method, input$aoi_area, drawn_polygon_sf()), {
   id <- showNotification("Preparing data for all plots...", duration = NULL, closeButton = FALSE, type = "message")
   on.exit(removeNotification(id), add = TRUE)
 
-  shape_to_extract <- get_shape_for_aoi(input$aoi_area)
+  if (input$aoi_selection_method == "predefined") {
+    req(input$aoi_area)
+    shape_to_extract <- get_shape_for_aoi(input$aoi_area)
+  } else if (input$aoi_selection_method == "draw") {
+    req(drawn_polygon_sf())
+    shape_to_extract <- drawn_polygon_sf()
+  } else {
+    return(NULL) # Or handle error/no selection
+  }
   req(shape_to_extract)
 
   data_list <- list()
@@ -84,7 +155,14 @@ all_plots_data <- eventReactive(input$aoi_area, {
 # --- MODIFIED SECTION ---
 # Render the UI grid with open cards for each scenario
 output$aoi_plots_grid <- renderUI({
-  req(input$aoi_area)
+  # Require either a predefined area or a drawn polygon
+  if (input$aoi_selection_method == "predefined") {
+    req(input$aoi_area)
+  } else if (input$aoi_selection_method == "draw") {
+    req(drawn_polygon_sf())
+  } else {
+    return(NULL)
+  }
   
   # Create a list of UI sections, one for each parameter
   parameter_sections <- lapply(1:nrow(aoi_params_df), function(i) {
@@ -103,7 +181,7 @@ output$aoi_plots_grid <- renderUI({
     # For each parameter, return a header followed by the grid of scenario plots
     # This removes the single collapsible parent card
     tagList(
-      h3(param_name, style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      h5(param_name, style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
       layout_columns(
         col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
         !!!plot_outputs
@@ -152,7 +230,8 @@ output$download_aoi_report <- downloadHandler(
                   html = ".html",
                   docx = ".docx",
                   ".html") # Default to .html
-    paste0("report-", input$aoi_area, "-", Sys.Date(), ext)
+    area_id <- if (input$aoi_selection_method == "predefined") input$aoi_area else "drawn_area"
+    paste0("report-", area_id, "-", Sys.Date(), ext)
   },
   content = function(file) {
     id <- showNotification(
@@ -183,7 +262,7 @@ output$download_aoi_report <- downloadHandler(
 
     # Build local params with plain R objects
     local_params <- list(
-      area_name = names(select_area[select_area == input$aoi_area]),
+      area_name = if (input$aoi_selection_method == "predefined") names(select_area[select_area == input$aoi_area]) else "User Drawn Area",
       plot_data = clean_plot_data,
       aoi_params = as.data.frame(aoi_params_df, stringsAsFactors = FALSE),
       aoi_scenarios = as.character(aoi_scenarios),

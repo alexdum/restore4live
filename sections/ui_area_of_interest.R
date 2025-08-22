@@ -1,12 +1,14 @@
 area_of_interest_ui <- layout_sidebar(
   sidebar = sidebar(
     title = "Area of Interest Controls",
-    selectInput(
-      inputId = "aoi_area",
-      label = "Select an area:",
-      choices = select_area,
-      selected = "at1"
+    radioButtons(
+      inputId = "aoi_selection_method",
+      label = "Select Area of Interest By:",
+      choices = c("Predefined Area" = "predefined", "Draw on Map" = "draw"),
+      selected = "predefined"
     ),
+    uiOutput("aoi_predefined_selection_ui"), # Placeholder for conditional UI
+    uiOutput("aoi_map_ui"), # Placeholder for conditional UI
     radioButtons(
       "report_format",
       label = "Select Report Format:",
