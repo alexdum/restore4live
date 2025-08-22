@@ -14,7 +14,7 @@ area_of_interest_ui <- layout_sidebar(
     radioButtons(
       "report_format",
       label = "Select Report Format:",
-      choices = list("HTML" = "html", "Word (DOCX)" = "docx"),
+      choices = list("HTML" = "html", "DOCX" = "docx"),
       selected = "html",
       inline = TRUE
     ),

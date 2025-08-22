@@ -48,8 +48,16 @@ drawn_polygon_sf <- reactiveVal(NULL)
 output$aoi_map <- renderLeaflet({
   req(input$aoi_selection_method == "draw")
   leaflet() %>%
-    addTiles() %>%
     setView(lng = 15, lat = 48, zoom = 5) %>%
+    addProviderTiles( "CartoDB.Positron", group = "CartoDB")  %>%
+    addProviderTiles( "Esri.WorldGrayCanvas", group = "EsriWorldGray") |>
+    addProviderTiles( "Esri.WorldImagery", group = "EsriWorldImagery") |>
+    addEasyButton(
+      easyButton(
+        icon    = "glyphicon glyphicon-home", title = "Zoom to Danube Basin",
+        onClick = JS("function(btn, map){ map.setView([45, 22], 4); }")
+      )
+    ) |>
     
     addDrawToolbar(
       targetGroup = "drawn_aoi",
@@ -75,6 +83,7 @@ output$aoi_map <- renderLeaflet({
       popup = "Danube River Basin"
     ) %>%
     addLayersControl(
+      baseGroups = c("CartoDB", "EsriWorldGray", "EsriWorldImagery"),
       overlayGroups = c("drawn_aoi", "Danube Basin"),
       options = layersControlOptions(collapsed = FALSE)
     ) %>%
