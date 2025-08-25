@@ -69,8 +69,11 @@ if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
           mutate(date = as.numeric(format(as.Date(date), "%Y")))
       }
 
+      # title absolute plots
+      cat(paste0("<h5>","Absolute values plots", "</h5>"))
       # Create the ggplot object
       line_color <- if (param_code %in% c("pr", "csdi")) "steelblue" else "red"
+      line_color_anom <- if (param_code %in% c("pr")) "steelblue" else "red"
       p <- ggplot(combined_df, aes(x = date)) + 
         geom_ribbon(aes(ymin = value10, ymax = value90), fill = "grey70", alpha = 0.5) + 
         geom_line(aes(y = value), color = line_color) + 
@@ -92,6 +95,59 @@ if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
       # Print the combined plot
       print(p)
 
+      # title anomaly plots
+      cat(paste0("<h5>","Anomaly values plots", "</h5>"))
+      # --- Anomaly Calculation and Plot ---
+      historical_mean <- combined_df %>% 
+        filter(date >= 1981 & date <= 2010) %>%
+        summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+        pull(mean_value)
+
+      if (!is.na(historical_mean)) {
+        if (param_code == "pr") {
+          if (historical_mean != 0) {
+            combined_df <- combined_df %>% 
+              mutate(
+                anomaly = ((value - historical_mean) / historical_mean) * 100,
+                anomaly10 = ((value10 - historical_mean) / historical_mean) * 100,
+                anomaly90 = ((value90 - historical_mean) / historical_mean) * 100
+              )
+            y_label_anomaly <- "Anomaly (%)"
+          } else {
+            combined_df <- combined_df %>% mutate(anomaly = NA, anomaly10 = NA, anomaly90 = NA)
+            y_label_anomaly <- "Anomaly (%)"
+          }
+        } else {
+          combined_df <- combined_df %>% 
+            mutate(
+              anomaly = value - historical_mean,
+              anomaly10 = value10 - historical_mean,
+              anomaly90 = value90 - historical_mean
+            )
+          y_label_anomaly <- paste0("Anomaly (", y_label, ")")
+        }
+
+        p_anomaly <- ggplot(combined_df, aes(x = date)) +
+          geom_ribbon(aes(ymin = anomaly10, ymax = anomaly90), fill = "grey70", alpha = 0.5) +
+          geom_line(aes(y = anomaly), color = line_color_anom) +
+          geom_smooth(aes(y = anomaly), method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
+          facet_wrap(~scenario, ncol = 2) + 
+          scale_x_continuous(breaks = c(1961, 1981,2000, 2014, 2021, 2041,2061, 2081, 2100)) + 
+          labs(
+            x = "Year",
+            y = y_label_anomaly
+          ) + 
+          theme_minimal(base_size = 10) + 
+          theme(
+            strip.text = element_text(size = 10),
+            axis.title = element_text(size = 10),
+            axis.text = element_text(size = 9),
+            axis.text.x = element_text(angle = 45, hjust = 1)
+          )
+        
+        print(p_anomaly)
+      }
+
     } else {
       # Fallback message if no data exists for this parameter
       # The header is already printed above, so we only need the message here.
@@ -107,3 +163,104 @@ if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
   }
 }
 ```
+
+#### Summarising climate
+
+```{r summary_table, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+library(tidyr)
+
+# Define the periods
+hist_period <- 1981:2010
+future_periods <- list(
+  "2041-2060" = 2041:2060,
+  "2061-2080" = 2061:2080,
+  "2081-2100" = 2081:2100
+)
+
+# Loop through each parameter
+for (i in seq_len(nrow(params$aoi_params))) {
+  param_code <- params$aoi_params$param[i]
+  param_name <- params$aoi_params$name[i]
+
+  # Initialize a list to store summary data for the current parameter
+  summary_list <- list()
+
+  # Loop through each scenario
+  for (scen_code in params$aoi_scenarios) {
+    plot_id <- paste(param_code, scen_code, sep = "_")
+    df <- params$plot_data[[plot_id]]
+    
+    # --- Optional DEBUG (comment out in production) ---
+    # knitr::asis_output(paste0("```r\n", paste(capture.output(str(df)), collapse = '\n'), "\n```"))
+    # --------------------------------------------------
+
+    if (is.data.frame(df) && nrow(df) > 0) {
+      
+      # Ensure date is numeric year
+      if ("date" %in% colnames(df) && !is.numeric(df$date)) {
+        df <- df %>%
+          mutate(date = as.numeric(format(as.Date(date), "%Y")))
+      }
+
+      # Calculate historical mean
+      historical_mean <- df %>%
+        filter(date %in% hist_period) %>%
+        summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+        pull(mean_value)
+
+      if (length(historical_mean) > 0 && !is.na(historical_mean)) {
+        
+        # Loop through future periods
+        for (period_name in names(future_periods)) {
+          future_period <- future_periods[[period_name]]
+          
+          # Calculate future mean
+          future_mean <- df %>%
+            filter(date %in% future_period) %>%
+            summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+            pull(mean_value)
+
+          if (length(future_mean) > 0 && !is.na(future_mean)) {
+            change <- if (param_code == "pr") {
+              if (historical_mean != 0) {
+                ((future_mean - historical_mean) / historical_mean) * 100
+              } else {
+                NA
+              }
+            } else {
+              future_mean - historical_mean
+            }
+            
+            # Add to summary list
+            summary_list[[length(summary_list) + 1]] <- data.frame(
+              Scenario = toupper(scen_code),
+              Period = period_name,
+              Historical_Mean = round(historical_mean, 2),
+              Future_Mean = round(future_mean, 2),
+              Change = round(change, 2)
+            )
+          }
+        }
+      }
+    }
+  }
+
+  # Combine list into a data frame and print table for the current parameter
+  if (length(summary_list) > 0) {
+    summary_df <- do.call(rbind, summary_list)
+    
+    # Reshape data to wide format
+    summary_wide <- summary_df %>%
+      tidyr::pivot_wider(
+        names_from = Period,
+        values_from = c("Future_Mean", "Change"),
+        names_sep = "_"
+      )
+
+    # Print title and table
+    cat(paste0("<h5>", param_name, "</h5>"))
+    print(knitr::kable(
+      summary_wide
+    ))
+  }
+}

@@ -36,7 +36,10 @@ prepare_climate_data <- function(param, season, season_ind, scen, quant, period_
   
   
   # pentru selectie tip de calcul
-  if (quant %in% "climate") {
+  if (quant == "timeseries") {
+    r_mean <- r # Return the full raster stack for time series analysis
+    setMinMax(r_mean)
+  } else if (quant == "climate") {
     
     # pentru subsetare
     an1 <- strsplit(period_climate, "-")[[1]][1] |> as.numeric()
