@@ -11,12 +11,13 @@ ui <-
       climate_scenario
     ),
     nav_panel(
-      title = "Area of Interest",
-      area_of_interest_ui
-    ),
-    nav_panel(
       title = "Remote Sensing",
       p("TBA")
+    ),
+    nav_panel(
+      title = "AoI",
+      area_of_interest_ui,
+      icon = icon("map-marked-alt"),
     ),
     nav_panel(
       class = "bslib-page-dashboard",
