@@ -13,7 +13,7 @@ params:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE, dpi = 300, fig.retina = 2)
 library(ggplot2)
 library(dplyr)
 ```
@@ -70,12 +70,13 @@ if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
       }
 
       # Create the ggplot object
+      line_color <- if (param_code %in% c("pr", "csdi")) "steelblue" else "red"
       p <- ggplot(combined_df, aes(x = date)) + 
         geom_ribbon(aes(ymin = value10, ymax = value90), fill = "grey70", alpha = 0.5) + 
-        geom_line(aes(y = value), color = "steelblue") + 
-        geom_smooth(aes(y = value), method = "lm", se = FALSE, color = "firebrick", linetype = "dashed", linewidth = 0.75) + 
+        geom_line(aes(y = value), color = line_color) + 
+        geom_smooth(aes(y = value), method = "lm", se = FALSE, color = "#252525", linewidth = 0.25) + 
         facet_wrap(~scenario, ncol = 2) + 
-        scale_x_continuous(breaks = scales::pretty_breaks()) + 
+        scale_x_continuous(breaks = c(1961, 1981,2000, 2014, 2021, 2041,2061, 2081, 2100)) + 
         labs(
           x = "Year",
           y = y_label
@@ -84,7 +85,8 @@ if (is.null(params$aoi_params) || nrow(params$aoi_params) == 0) {
         theme(
           strip.text = element_text(size = 10),
           axis.title = element_text(size = 10),
-          axis.text = element_text(size = 9)
+          axis.text = element_text(size = 9),
+          axis.text.x = element_text(angle = 45, hjust = 1)
         )
       
       # Print the combined plot
