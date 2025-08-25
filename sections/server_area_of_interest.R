@@ -1,3 +1,5 @@
+library(tidyr)
+
 # Define parameters and scenarios to loop through
 # The column names in params_def are 'input' (for the code) and 'parm' (for the name).
 # Let's select them and rename for consistency within this script.
@@ -221,14 +223,34 @@ output$aoi_plots_grid <- renderUI({
       )
     })
     
+    # Anomaly plots
+    anomaly_plot_outputs <- lapply(aoi_scenarios, function(scen_code) {
+      output_id <- paste("aoi_anomaly_plot", param_code, scen_code, sep = "_")
+      card(
+        card_header(paste("Anomaly vs 1981-2010 - Scenario:", toupper(scen_code))),
+        highchartOutput(output_id, height = "300px")
+      )
+    })
+    
+    # Summary table
+    summary_table_output <- tableOutput(paste("summary_table", param_code, sep = "_"))
+    
     # For each parameter, return a header followed by the grid of scenario plots
     # This removes the single collapsible parent card
     tagList(
       h5(param_name, style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      h6("Absolute values", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
       layout_columns(
         col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
         !!!plot_outputs
       ),
+      h6("Anomaly values", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      layout_columns(
+        col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
+        !!!anomaly_plot_outputs
+      ),
+      h6("Summary table", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      summary_table_output,
       hr(style = "margin-top: 20px;") # Adds a line to separate parameter groups
     )
   })
@@ -264,6 +286,151 @@ observeEvent(all_plots_data(), {
     })
   }
 })
+
+# Anomaly and Summary Table Generation
+observeEvent(all_plots_data(), {
+  plot_data <- all_plots_data()
+  
+  for (i in 1:nrow(aoi_params_df)) {
+    param_code <- aoi_params_df$param[i]
+    param_name <- aoi_params_df$name[i]
+    
+    # --- Data Aggregation for Anomalies and Summaries ---
+    all_scenarios_data <- lapply(aoi_scenarios, function(scen_code) {
+      plot_id <- paste(param_code, scen_code, sep = "_")
+      df <- plot_data[[plot_id]]
+      
+      if (is.data.frame(df) && nrow(df) > 0 && !all(is.na(df$value))) {
+        df$scenario <- toupper(scen_code)
+        return(df)
+      }
+      return(NULL)
+    })
+    
+    combined_df <- dplyr::bind_rows(all_scenarios_data)
+    
+    if (is.data.frame(combined_df) && nrow(combined_df) > 0) {
+      
+      # --- Anomaly Calculation ---
+      historical_mean <- combined_df %>% 
+        filter(as.numeric(format(date, "%Y")) >= 1981 & as.numeric(format(date, "%Y")) <= 2010) %>%
+        summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+        pull(mean_value)
+
+      if (!is.na(historical_mean)) {
+        if (param_code == "pr") {
+          if (historical_mean != 0) {
+            combined_df <- combined_df %>% 
+              mutate(
+                anomaly = ((value - historical_mean) / historical_mean) * 100,
+                anomaly10 = ((value10 - historical_mean) / historical_mean) * 100,
+                anomaly90 = ((value90 - historical_mean) / historical_mean) * 100
+              )
+          } else {
+            combined_df <- combined_df %>% mutate(anomaly = NA, anomaly10 = NA, anomaly90 = NA)
+          }
+        } else {
+          combined_df <- combined_df %>% 
+            mutate(
+              anomaly = value - historical_mean,
+              anomaly10 = value10 - historical_mean,
+              anomaly90 = value90 - historical_mean
+            )
+        }
+        
+        # --- Render Anomaly Plots ---
+        for (scen_code in aoi_scenarios) {
+          local({
+            local_scen_code <- scen_code
+            output_id <- paste("aoi_anomaly_plot", param_code, local_scen_code, sep = "_")
+            
+            output[[output_id]] <- renderHighchart({
+              df_scen <- combined_df %>% filter(scenario == toupper(local_scen_code))
+              
+              if (is.data.frame(df_scen) && nrow(df_scen) > 0 && !all(is.na(df_scen$anomaly))) {
+                create_timeseries_chart(
+                  data_input = df_scen,
+                  param = param_code,
+                  params_def = params_def,
+                  is_anomaly = TRUE
+                )
+              } else {
+                highchart() %>% hc_title(text = "Anomaly data not available")
+              }
+            })
+          })
+        }
+      }
+      
+      # --- Summary Table Calculation ---
+      hist_period <- 1981:2010
+      future_periods <- list(
+        "2041-2060" = 2041:2060,
+        "2061-2080" = 2061:2080,
+        "2081-2100" = 2081:2100
+      )
+      
+      summary_list <- list()
+      
+      for (scen_code in aoi_scenarios) {
+        df_scen <- combined_df %>% filter(scenario == toupper(scen_code))
+        
+        if (is.data.frame(df_scen) && nrow(df_scen) > 0) {
+          historical_mean_scen <- df_scen %>%
+            filter(as.numeric(format(date, "%Y")) %in% hist_period) %>%
+            summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+            pull(mean_value)
+            
+          if (length(historical_mean_scen) > 0 && !is.na(historical_mean_scen)) {
+            for (period_name in names(future_periods)) {
+              future_period <- future_periods[[period_name]]
+              
+              future_mean <- df_scen %>%
+                filter(as.numeric(format(date, "%Y")) %in% future_period) %>%
+                summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+                pull(mean_value)
+                
+              if (length(future_mean) > 0 && !is.na(future_mean)) {
+                change <- if (param_code == "pr") {
+                  if (historical_mean_scen != 0) {
+                    ((future_mean - historical_mean_scen) / historical_mean_scen) * 100
+                  } else {
+                    NA
+                  }
+                } else {
+                  future_mean - historical_mean_scen
+                }
+                
+                summary_list[[length(summary_list) + 1]] <- data.frame(
+                  Scenario = toupper(scen_code),
+                  Period = period_name,
+                  Historical_Mean = round(historical_mean_scen, 2),
+                  Future_Mean = round(future_mean, 2),
+                  Change = round(change, 2)
+                )
+              }
+            }
+          }
+        }
+      }
+      
+      if (length(summary_list) > 0) {
+        summary_df <- do.call(rbind, summary_list)
+        
+        summary_wide <- summary_df %>%
+          tidyr::pivot_wider(
+            names_from = Period,
+            values_from = c("Future_Mean", "Change"),
+            names_sep = "_"
+          )
+        
+        output_id <- paste("summary_table", param_code, sep = "_")
+        output[[output_id]] <- renderTable(summary_wide)
+      }
+    }
+  }
+})
+
 
 # Handler for downloading the report
 output$download_aoi_report <- downloadHandler(
