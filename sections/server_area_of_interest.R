@@ -130,9 +130,6 @@ get_shape_for_aoi <- function(aoi_id) {
 
 # Reactive that prepares all dataframes when the area changes
 all_plots_data <- eventReactive(list(input$aoi_selection_method, input$aoi_area, drawn_polygon_sf()), {
-  id <- showNotification("Preparing data for all plots...", duration = NULL, closeButton = FALSE, type = "message")
-  on.exit(removeNotification(id), add = TRUE)
-
   if (input$aoi_selection_method == "predefined") {
     req(input$aoi_area)
     shape_to_extract <- get_shape_for_aoi(input$aoi_area)
@@ -149,51 +146,59 @@ all_plots_data <- eventReactive(list(input$aoi_selection_method, input$aoi_area,
   # Define which parameters are climate indices, as they are handled differently
   climate_indices <- c("gsl", "tr", "wsdi", "csdi")
 
-  for (i in 1:nrow(aoi_params_df)) {
-    param_code <- aoi_params_df$param[i]
+  n_items <- nrow(aoi_params_df) * length(aoi_scenarios)
+  withProgress(message = 'Generating graphs', value = 0, {
+    progress_counter <- 0
+    for (i in 1:nrow(aoi_params_df)) {
+      param_code <- aoi_params_df$param[i]
+      param_name <- aoi_params_df$name[i]
 
-    if (param_code %in% climate_indices) {
-      season_arg <- NULL
-      season_ind_arg <- "ANN"
-    } else {
-      season_arg <- "year-year"
-      season_ind_arg <- NULL
-    }
+      if (param_code %in% climate_indices) {
+        season_arg <- NULL
+        season_ind_arg <- "ANN"
+      } else {
+        season_arg <- "year-year"
+        season_ind_arg <- NULL
+      }
 
-    for (scen_code in aoi_scenarios) {
-      plot_id <- paste(param_code, scen_code, sep = "_")
-
-      ddf <- try({
-        data_prepared <- prepare_climate_data(
-          param = param_code,
-          season = season_arg,
-          season_ind = season_ind_arg,
-          scen = scen_code,
-          quant = "timeseries",
-          period_climate = "2081-2100",
-          period_change = c("1981-2010", "2041-2060"),
-          transp = 0.8,
-          files_cmip6 = files_cmip6,
-          params_def = params_def,
-          select_seas = select_seas
-        )
+      for (scen_code in aoi_scenarios) {
+        progress_counter <- progress_counter + 1
+        incProgress(1/n_items, detail = paste("Processing", param_name, "-", toupper(scen_code)))
         
-        extract_zonal_data(
-          file_hist = data_prepared$file_hist,
-          file_scen = data_prepared$file_scen,
-          shape = shape_to_extract,
-          season_subset = data_prepared$season_subset,
-          param = param_code,
-          quant = "climate",
-          period_change = c("1981-2010", "2041-2060"),
-          file_ind = data_prepared$file_ind
-        )
-      }, silent = TRUE)
+        plot_id <- paste(param_code, scen_code, sep = "_")
 
-      data_list[[plot_id]] <- ddf
+        ddf <- try({
+          data_prepared <- prepare_climate_data(
+            param = param_code,
+            season = season_arg,
+            season_ind = season_ind_arg,
+            scen = scen_code,
+            quant = "timeseries",
+            period_climate = "2081-2100",
+            period_change = c("1981-2010", "2041-2060"),
+            transp = 0.8,
+            files_cmip6 = files_cmip6,
+            params_def = params_def,
+            select_seas = select_seas
+          )
+          
+          extract_zonal_data(
+            file_hist = data_prepared$file_hist,
+            file_scen = data_prepared$file_scen,
+            shape = shape_to_extract,
+            season_subset = data_prepared$season_subset,
+            param = param_code,
+            quant = "climate",
+            period_change = c("1981-2010", "2041-2060"),
+            file_ind = data_prepared$file_ind
+          )
+        }, silent = TRUE)
+
+        data_list[[plot_id]] <- ddf
+      }
     }
-  }
-  
+  })
+
   data_list
 })
 
@@ -466,15 +471,8 @@ output$download_aoi_report <- downloadHandler(
     paste0("report-", area_id, "-", Sys.Date(), ext)
   },
   content = function(file) {
-    id <- showNotification(
-      "Generating report...",
-      duration = NULL,
-      closeButton = FALSE,
-      type = "message"
-    )
-    on.exit(removeNotification(id))
-
-    # --- CLEAN the data going into the report ---
+    withProgress(message = 'Generating report, please wait...', {
+      # --- CLEAN the data going into the report ---
     clean_plot_data <- lapply(all_plots_data(), function(x) {
       if (inherits(x, "try-error") || is.null(x) || !is.data.frame(x)) {
         return(data.frame(
@@ -520,6 +518,7 @@ output$download_aoi_report <- downloadHandler(
       params = local_params,
       envir = new.env(parent = globalenv())
     )
+    })
   }
 )
 
