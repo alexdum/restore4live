@@ -292,143 +292,165 @@ observeEvent(all_plots_data(), {
   plot_data <- all_plots_data()
   
   for (i in 1:nrow(aoi_params_df)) {
-    param_code <- aoi_params_df$param[i]
-    param_name <- aoi_params_df$name[i]
-    
-    # --- Data Aggregation for Anomalies and Summaries ---
-    all_scenarios_data <- lapply(aoi_scenarios, function(scen_code) {
-      plot_id <- paste(param_code, scen_code, sep = "_")
-      df <- plot_data[[plot_id]]
+    # Using local() to create a new scope for each iteration of the loop.
+    # This is crucial to prevent Shiny's lazy evaluation from causing all
+    # outputs to use the last value of the loop's variables (e.g., param_code).
+    local({
+      param_code <- aoi_params_df$param[i]
+      param_name <- aoi_params_df$name[i]
       
-      if (is.data.frame(df) && nrow(df) > 0 && !all(is.na(df$value))) {
-        df$scenario <- toupper(scen_code)
-        return(df)
-      }
-      return(NULL)
-    })
-    
-    combined_df <- dplyr::bind_rows(all_scenarios_data)
-    
-    if (is.data.frame(combined_df) && nrow(combined_df) > 0) {
-      
-      # --- Anomaly Calculation ---
-      historical_mean <- combined_df %>% 
-        filter(as.numeric(format(date, "%Y")) >= 1981 & as.numeric(format(date, "%Y")) <= 2010) %>%
-        summarise(mean_value = mean(value, na.rm = TRUE)) %>%
-        pull(mean_value)
-
-      if (!is.na(historical_mean)) {
-        if (param_code == "pr") {
-          if (historical_mean != 0) {
-            combined_df <- combined_df %>% 
-              mutate(
-                anomaly = ((value - historical_mean) / historical_mean) * 100,
-                anomaly10 = ((value10 - historical_mean) / historical_mean) * 100,
-                anomaly90 = ((value90 - historical_mean) / historical_mean) * 100
-              )
-          } else {
-            combined_df <- combined_df %>% mutate(anomaly = NA, anomaly10 = NA, anomaly90 = NA)
-          }
-        } else {
-          combined_df <- combined_df %>% 
-            mutate(
-              anomaly = value - historical_mean,
-              anomaly10 = value10 - historical_mean,
-              anomaly90 = value90 - historical_mean
-            )
-        }
+      # --- Data Aggregation for Anomalies and Summaries ---
+      all_scenarios_data <- lapply(aoi_scenarios, function(scen_code) {
+        plot_id <- paste(param_code, scen_code, sep = "_")
+        df <- plot_data[[plot_id]]
         
-        # --- Render Anomaly Plots ---
+        if (is.data.frame(df) && nrow(df) > 0 && !all(is.na(df$value))) {
+          df$scenario <- toupper(scen_code)
+          return(df)
+        }
+        return(NULL)
+      })
+      
+      combined_df <- dplyr::bind_rows(all_scenarios_data)
+      
+      if (is.data.frame(combined_df) && nrow(combined_df) > 0) {
+        
+        # --- Anomaly Calculation ---
+        # Loop through scenarios to calculate anomalies per scenario
         for (scen_code in aoi_scenarios) {
           local({
             local_scen_code <- scen_code
-            output_id <- paste("aoi_anomaly_plot", param_code, local_scen_code, sep = "_")
-            
-            output[[output_id]] <- renderHighchart({
-              df_scen <- combined_df %>% filter(scenario == toupper(local_scen_code))
-              
-              if (is.data.frame(df_scen) && nrow(df_scen) > 0 && !all(is.na(df_scen$anomaly))) {
-                create_timeseries_chart(
-                  data_input = df_scen,
-                  param = param_code,
-                  params_def = params_def,
-                  is_anomaly = TRUE
-                )
+            df_scen <- combined_df %>% filter(scenario == toupper(local_scen_code))
+
+            historical_mean_scen <- df_scen %>%
+              filter(as.numeric(format(date, "%Y")) >= 1981 & as.numeric(format(date, "%Y")) <= 2010) %>%
+              summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+              pull(mean_value)
+
+            if (!is.na(historical_mean_scen)) {
+              if (param_code == "pr") {
+                if (historical_mean_scen != 0) {
+                  df_scen <- df_scen %>%
+                    mutate(
+                      anomaly = ((value - historical_mean_scen) / historical_mean_scen) * 100,
+                      anomaly10 = ((value10 - historical_mean_scen) / historical_mean_scen) * 100,
+                      anomaly90 = ((value90 - historical_mean_scen) / historical_mean_scen) * 100
+                    )
+                } else {
+                  df_scen <- df_scen %>% mutate(anomaly = NA, anomaly10 = NA, anomaly90 = NA)
+                }
               } else {
-                highchart() %>% hc_title(text = "Anomaly data not available")
+                df_scen <- df_scen %>%
+                  mutate(
+                    anomaly = value - historical_mean_scen,
+                    anomaly10 = value10 - historical_mean_scen,
+                    anomaly90 = value90 - historical_mean_scen
+                  )
               }
-            })
+
+              # --- Render Anomaly Plots ---
+              output_id <- paste("aoi_anomaly_plot", param_code, local_scen_code, sep = "_")
+
+              output[[output_id]] <- renderHighchart({
+                if (is.data.frame(df_scen) && nrow(df_scen) > 0 && !all(is.na(df_scen$anomaly))) {
+                  create_timeseries_chart(
+                    data_input = df_scen,
+                    param = param_code,
+                    params_def = params_def,
+                    is_anomaly = TRUE
+                  )
+                } else {
+                  highchart() %>% hc_title(text = "Anomaly data not available")
+                }
+              })
+            }
           })
         }
-      }
-      
-      # --- Summary Table Calculation ---
-      hist_period <- 1981:2010
-      future_periods <- list(
-        "2041-2060" = 2041:2060,
-        "2061-2080" = 2061:2080,
-        "2081-2100" = 2081:2100
-      )
-      
-      summary_list <- list()
-      
-      for (scen_code in aoi_scenarios) {
-        df_scen <- combined_df %>% filter(scenario == toupper(scen_code))
         
-        if (is.data.frame(df_scen) && nrow(df_scen) > 0) {
-          historical_mean_scen <- df_scen %>%
-            filter(as.numeric(format(date, "%Y")) %in% hist_period) %>%
-            summarise(mean_value = mean(value, na.rm = TRUE)) %>%
-            pull(mean_value)
+        # --- Summary Table Calculation (Corrected) ---
+        # This logic is now aligned with the proven implementation in report_template.Rmd
+        
+        hist_period <- 1981:2010
+        future_periods <- list(
+          "2041-2060" = 2041:2060,
+          "2061-2080" = 2061:2080,
+          "2081-2100" = 2081:2100
+        )
+        
+        summary_list <- list()
+
+        # Loop through each scenario to get the correct data, similar to the Rmd file
+        for (scen_code in aoi_scenarios) {
+          plot_id <- paste(param_code, scen_code, sep = "_")
+          df <- plot_data[[plot_id]]
+          
+          if (is.data.frame(df) && nrow(df) > 0) {
             
-          if (length(historical_mean_scen) > 0 && !is.na(historical_mean_scen)) {
-            for (period_name in names(future_periods)) {
-              future_period <- future_periods[[period_name]]
+            # Ensure date is numeric year
+            if ("date" %in% colnames(df) && !is.numeric(df$date)) {
+              df <- df %>%
+                mutate(date = as.numeric(format(as.Date(date), "%Y")))
+            }
+
+            # Calculate historical mean from the 'value' column
+            historical_mean <- df %>%
+              filter(date %in% hist_period) %>%
+              summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+              pull(mean_value)
+
+            if (length(historical_mean) > 0 && !is.na(historical_mean)) {
               
-              future_mean <- df_scen %>%
-                filter(as.numeric(format(date, "%Y")) %in% future_period) %>%
-                summarise(mean_value = mean(value, na.rm = TRUE)) %>%
-                pull(mean_value)
+              # Loop through future periods to calculate means and changes
+              for (period_name in names(future_periods)) {
+                future_period <- future_periods[[period_name]]
                 
-              if (length(future_mean) > 0 && !is.na(future_mean)) {
-                change <- if (param_code == "pr") {
-                  if (historical_mean_scen != 0) {
-                    ((future_mean - historical_mean_scen) / historical_mean_scen) * 100
+                future_mean <- df %>%
+                  filter(date %in% future_period) %>%
+                  summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+                  pull(mean_value)
+
+                if (length(future_mean) > 0 && !is.na(future_mean)) {
+                  change <- if (param_code == "pr") {
+                    if (historical_mean != 0) {
+                      ((future_mean - historical_mean) / historical_mean) * 100
+                    } else {
+                      NA
+                    }
                   } else {
-                    NA
+                    future_mean - historical_mean
                   }
-                } else {
-                  future_mean - historical_mean_scen
+                  
+                  # Add the results to our list
+                  summary_list[[length(summary_list) + 1]] <- data.frame(
+                    Scenario = toupper(scen_code),
+                    Period = period_name,
+                    Historical_Mean = round(historical_mean, 2),
+                    Future_Mean = round(future_mean, 2),
+                    Change = round(change, 2)
+                  )
                 }
-                
-                summary_list[[length(summary_list) + 1]] <- data.frame(
-                  Scenario = toupper(scen_code),
-                  Period = period_name,
-                  Historical_Mean = round(historical_mean_scen, 2),
-                  Future_Mean = round(future_mean, 2),
-                  Change = round(change, 2)
-                )
               }
             }
           }
         }
-      }
-      
-      if (length(summary_list) > 0) {
-        summary_df <- do.call(rbind, summary_list)
         
-        summary_wide <- summary_df %>%
-          tidyr::pivot_wider(
-            names_from = Period,
-            values_from = c("Future_Mean", "Change"),
-            names_sep = "_"
-          )
-        
-        output_id <- paste("summary_table", param_code, sep = "_")
-        output[[output_id]] <- renderTable(summary_wide)
+        # If we have summary data, create the wide table and render it
+        if (length(summary_list) > 0) {
+          summary_df <- do.call(rbind, summary_list)
+          
+          summary_wide <- summary_df %>%
+            tidyr::pivot_wider(
+              names_from = Period,
+              values_from = c("Future_Mean", "Change"),
+              names_sep = "_"
+            )
+          
+          output_id <- paste("summary_table", param_code, sep = "_")
+          output[[output_id]] <- renderTable(summary_wide)
+        }
       }
-    }
-  }
+    }) # End local()
+  } # End for loop
 })
 
 
