@@ -171,18 +171,18 @@ output$aoi_plots_grid <- renderUI({
     # For each parameter, return a header followed by the grid of scenario plots
     # This removes the single collapsible parent card
     tagList(
-      h5(param_name, style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
-      h6("Absolute values", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      h5(param_name, style = "text-align: left; margin-top: 25px; margin-bottom: 15px;"),
+      h6("Absolute values", style = "text-align: left; margin-top: 15px; margin-bottom: 15px;"),
       layout_columns(
         col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
         !!!plot_outputs
       ),
-      h6("Anomaly values", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      h6("Anomaly values", style = "text-align: left; margin-top: 15px; margin-bottom: 15px;"),
       layout_columns(
         col_widths = c(6, 6, 6, 6), # Creates a 2x2 grid
         !!!anomaly_plot_outputs
       ),
-      h6("Summary table", style = "text-align: center; margin-top: 25px; margin-bottom: 15px;"),
+      h6("Summary table", style = "text-align: left; margin-top: 25px; margin-bottom: 15px;"),
       summary_table_output,
       hr(style = "margin-top: 20px;") # Adds a line to separate parameter groups
     )
