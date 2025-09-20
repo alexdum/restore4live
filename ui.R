@@ -12,7 +12,24 @@ ui <-
     ),
     nav_panel(
       title = "Remote Sensing",
-      p("TBA")
+      bslib::layout_sidebar(
+        sidebar = bslib::sidebar(
+          uiOutput("timestep_selector")
+        ),
+        layout_columns(
+          # col_widths = c(8, 4),
+          card( # First card for the map
+            full_screen = TRUE,
+            card_header("NDVI Map"), # Changed header
+            leafletOutput("ndvi_map")
+          ),
+          card( # Second card for the timeseries plot
+            full_screen = TRUE,
+            card_header("Timeseries Plot"),
+            highchartOutput("timeseries_plot")
+          )
+        )
+      )
     ),
     nav_panel(
       title = "AoI",
