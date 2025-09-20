@@ -14,7 +14,12 @@ library(shinyjs)
 
 
 
+# reticulate::py_install(c("dask['complete']"))
+# reticulate::py_install(c("requests", "aiohttp"))
+#  source_python("utils/read_zarr_data.py") it is loaded in server_rs
 source_python("utils/extract_points.py") 
+# Source the Python script
+
 
 source("utils/leaflet_fun.R", local = T)
 source("utils/prepare_climate_data.R", local = T)
