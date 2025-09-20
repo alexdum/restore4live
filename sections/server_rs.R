@@ -4,6 +4,16 @@ zarr_url <- "https://r4l-data.unibuc.ro/data/eo_indicies/ndvi/zarr/ndvi_monthly_
 # Source the Python script for reading Zarr data
 source_python("utils/read_zarr_data.py")
 
+# Add this helper function at the beginning of your server code
+bounds_are_similar <- function(bounds1, bounds2, tolerance = 0.001) {
+  if (is.null(bounds1) || is.null(bounds2)) return(FALSE)
+  
+  abs(bounds1$north - bounds2$north) < tolerance &&
+  abs(bounds1$south - bounds2$south) < tolerance &&
+  abs(bounds1$east - bounds2$east) < tolerance &&
+  abs(bounds1$west - bounds2$west) < tolerance
+}
+
 # --- Server logic for the Remote Sensing tab ---
 
 # Reactive values to track the current render state and map position
@@ -59,7 +69,7 @@ full_resolution_raster <- eventReactive(input$selected_timestep, {
 debounced_bounds <- reactive({
   req(input$ndvi_map_bounds)
   input$ndvi_map_bounds
-}) %>% debounce(400) # Wait 400ms after user stops moving
+}) %>% debounce(800) # Wait 800ms after user stops moving
 
 # Render the initial Leaflet map
 output$ndvi_map <- renderLeaflet({
@@ -92,7 +102,7 @@ observe({
   } else if (current_view_state == "high-res") {
     # If we are staying in high-res, only render if the map has actually moved.
     # The `!identical()` check is what prevents the feedback loop from causing a re-render.
-    if (is.null(previous_bounds) || !identical(previous_bounds, current_bounds)) {
+    if (is.null(previous_bounds) || !bounds_are_similar(previous_bounds, current_bounds)) {
        should_render <- TRUE
     }
   }
@@ -118,7 +128,7 @@ observe({
 
       # Then add the new raster and legend
       leafletProxy("ndvi_map", data = raster_to_draw) %>%
-        addRasterImage(raster_to_draw, colors = pal, opacity = 0.8, project = TRUE) %>%
+        addRasterImage(raster_to_draw, colors = pal, opacity = 0.8, project = FALSE) %>%
         clearControls() %>%
         leaflet::addLegend(
           pal = rev_pal,
