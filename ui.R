@@ -14,7 +14,23 @@ ui <-
       title = "Remote Sensing",
       bslib::layout_sidebar(
         sidebar = bslib::sidebar(
-          uiOutput("timestep_selector")
+          uiOutput("timestep_selector"),
+          sliderInput(
+            "trans_rs",
+            span(
+              "Transparency",
+              tooltip(
+                bs_icon("info-circle"),
+                "Select raster opacity"
+              )
+            ),
+            min = 0,
+            max = 1,
+            value = 0.8,
+            step = 0.1,
+            ticks = F
+            
+          )
         ),
         layout_columns(
           # col_widths = c(8, 4),

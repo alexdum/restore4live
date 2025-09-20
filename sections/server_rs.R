@@ -19,6 +19,7 @@ bounds_are_similar <- function(bounds1, bounds2, tolerance = 0.001) {
 # Reactive values to track the current render state and map position
 last_rendered_state <- reactiveVal("initial")
 last_rendered_bounds <- reactiveVal(NULL) # NEW: Stores the bounds of the last successful render
+last_rendered_transparency <- reactiveVal(NULL) # NEW: Stores the transparency of the last successful render
 
 # Call the Python function to get all available timesteps
 all_timesteps <- reactive({
@@ -81,8 +82,9 @@ observe({
   # Dependencies: Runs when user stops moving OR new raster is ready.
   full_raster <- full_resolution_raster()
   current_bounds <- debounced_bounds()
+  transparency_val <- input$trans_rs # Add transparency as a dependency
   
-  req(full_raster, current_bounds)
+  req(full_raster, current_bounds, transparency_val)
 
   # 1. Determine the DESIRED state based on the current view
   map_extent <- terra::ext(current_bounds$west, current_bounds$east, current_bounds$south, current_bounds$north)
@@ -95,6 +97,7 @@ observe({
   should_render <- FALSE
   previous_state <- last_rendered_state()
   previous_bounds <- last_rendered_bounds()
+  previous_transparency <- last_rendered_transparency()
 
   if (current_view_state != previous_state) {
     # If the state itself has changed (e.g., aggregated -> high-res), we MUST render.
@@ -105,6 +108,11 @@ observe({
     if (is.null(previous_bounds) || !bounds_are_similar(previous_bounds, current_bounds)) {
        should_render <- TRUE
     }
+  }
+  
+  # Also re-render if transparency has changed
+  if (is.null(previous_transparency) || transparency_val != previous_transparency) {
+    should_render <- TRUE
   }
   # Note: If current_view_state == "aggregated" and previous_state == "aggregated",
   # should_render remains FALSE, preventing panning from re-rendering the overview.
@@ -128,7 +136,7 @@ observe({
 
       # Then add the new raster and legend
       leafletProxy("ndvi_map", data = raster_to_draw) %>%
-        addRasterImage(raster_to_draw, colors = pal, opacity = 0.8, project = FALSE) %>%
+        addRasterImage(raster_to_draw, colors = pal, opacity = input$trans_rs, project = FALSE) %>%
         clearControls() %>%
         leaflet::addLegend(
           pal = rev_pal,
@@ -142,6 +150,7 @@ observe({
     # 4. Update the state trackers *after* a successful render
     last_rendered_state(current_view_state)
     last_rendered_bounds(current_bounds)
+    last_rendered_transparency(transparency_val)
   }
 })
 
