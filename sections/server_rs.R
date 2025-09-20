@@ -122,7 +122,7 @@ observe({
     raster_to_draw <- if (current_view_state == "high-res") {
       tryCatch(terra::crop(full_raster, map_extent), error = function(e) NULL)
     } else {
-      terra::aggregate(full_raster, fact = 8, fun = "mean")
+      terra::aggregate(full_raster, fact = 3, fun = "mean")
     }
     
     if (is.null(raster_to_draw)) {
