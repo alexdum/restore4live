@@ -67,14 +67,16 @@ plot_climat_obs_data <- function(df, station_name = "") {
                     x = ~Date, y = ~MinTempAbs, type = "scatter", mode = "lines",
                     line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
                     showlegend = FALSE, name = "Abs Min",
-                    hovertemplate = "Abs Min: %{y:.1f}°C<extra></extra>"
+                    hovertemplate = "Abs Min: %{y:.1f}°C<extra></extra>",
+                    connectgaps = FALSE
                 ) %>%
                 add_trace(
                     x = ~Date, y = ~MaxTempAbs, type = "scatter", mode = "lines",
                     fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.1)",
                     line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
                     name = "Abs Max", showlegend = TRUE,
-                    hovertemplate = "Abs Max: %{y:.1f}°C<extra></extra>"
+                    hovertemplate = "Abs Max: %{y:.1f}°C<extra></extra>",
+                    connectgaps = FALSE
                 )
         }
 
@@ -84,21 +86,24 @@ plot_climat_obs_data <- function(df, station_name = "") {
                     x = ~Date, y = ~MeanMinTemp, type = "scatter", mode = "lines",
                     line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
                     showlegend = FALSE, name = "Mean Min",
-                    hovertemplate = "Mean Min: %{y:.1f}°C<extra></extra>"
+                    hovertemplate = "Mean Min: %{y:.1f}°C<extra></extra>",
+                    connectgaps = FALSE
                 ) %>%
                 add_trace(
                     x = ~Date, y = ~MeanMaxTemp, type = "scatter", mode = "lines",
                     fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.3)",
                     line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
                     name = "Mean Max", showlegend = TRUE,
-                    hovertemplate = "Mean Max: %{y:.1f}°C<extra></extra>"
+                    hovertemplate = "Mean Max: %{y:.1f}°C<extra></extra>",
+                    connectgaps = FALSE
                 )
         }
 
         p_temp <- p_temp %>% add_lines(
             x = ~Date, y = ~MeanTemp, name = "Mean Temp",
             line = list(color = "#b71c1c", width = 2),
-            hovertemplate = "Mean Temp: %{y:.1f}°C<extra></extra>"
+            hovertemplate = "Mean Temp: %{y:.1f}°C<extra></extra>",
+            connectgaps = FALSE
         )
     } else {
         p_temp <- empty_plot("No temperature data")

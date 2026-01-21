@@ -290,6 +290,19 @@ observe({
             }
 
             final_df <- final_df[order(final_df$Date), ]
+
+            # Create complete date sequence to show gaps in data
+            min_date <- min(final_df$Date, na.rm = TRUE)
+            max_date <- max(final_df$Date, na.rm = TRUE)
+            complete_dates <- seq.Date(
+                from = as.Date(paste0(format(min_date, "%Y-%m"), "-01")),
+                to = as.Date(paste0(format(max_date, "%Y-%m"), "-01")),
+                by = "month"
+            )
+            complete_df <- data.frame(Date = complete_dates)
+            final_df <- merge(complete_df, final_df, by = "Date", all.x = TRUE)
+            final_df <- final_df[order(final_df$Date), ]
+
             final_df$Year <- as.numeric(format(final_df$Date, "%Y"))
             final_df$Month <- as.numeric(format(final_df$Date, "%m"))
 
