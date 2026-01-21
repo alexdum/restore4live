@@ -60,6 +60,37 @@ A resurgent nationalism, concerns about competitiveness and security, and region
 
 This world places increasing faith in competitive markets, innovation and participatory societies to produce rapid technological progress and development of human capital as the path to sustainable development. Global markets are increasingly integrated. There are also strong investments in health, education, and institutions to enhance human and social capital. At the same time, the push for economic and social development is coupled with the exploitation of abundant fossil fuel resources and the adoption of resource and energy intensive lifestyles around the world. All these factors lead to rapid growth of the global economy, while global population peaks and declines in the 21st century. Local environmental problems like air pollution are successfully managed. There is faith in the ability to effectively manage social and ecological systems, including by geo-engineering if necessary.
 
+#### Climate observational data
+
+This section provides access to **monthly climatological reports (CLIMAT)** from land stations. These reports are sourced from the **Deutscher Wetterdienst (DWD) Open Data Server** and provide a valuable historical record of weather conditions.
+
+**Data Source:** [DWD Climate Data Center (CDC)](https://opendata.dwd.de/climate_environment/CDC/observations_global/CLIMAT/monthly/qc/)
+
+The following parameters are extracted and visualized:
+
+| Parameter | Unit | Description |
+|:----------|:-----|:------------|
+| **Mean Temperature** | °C | Monthly mean air temperature |
+| **Absolute Max Temperature** | °C | Maximum temperature recorded in the month |
+| **Absolute Min Temperature** | °C | Minimum temperature recorded in the month |
+| **Mean Daily Max Temperature** | °C | Mean of daily maximum temperatures |
+| **Mean Daily Min Temperature** | °C | Mean of daily minimum temperatures |
+| **Total Precipitation** | mm | Total monthly precipitation |
+| **Precipitation Days** | Days | Number of days with precipitation ≥ 1mm |
+| **Sunshine Duration** | Hours | Total monthly sunshine duration |
+| **Mean Sea Level Pressure** | hPa | Monthly mean pressure reduced to sea level |
+| **Vapour Pressure** | hPa | Monthly mean vapour pressure |
+
+: Climate Observational Parameters {.striped .hover #tbl-obs-params}
+
+**Visualization:**
+The data is presented in an interactive dashboard allowing users to:
+
+*   View long-term timeseries of the available parameters.
+*   Inspect individual monthly values via hover tooltips.
+*   Zoom into specific time periods (e.g., last 10 years).
+*   Download the station's dataset as a CSV file.
+
 #### Remote sensing
 
 TBA
