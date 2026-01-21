@@ -17,7 +17,7 @@ climate_observational_sidebar <- list(
         tags$h6(icon("database"), " Data info"),
         tags$p(
             style = "font-size: 0.9em;",
-            "The data represents monthly climatological reports (CLIMAT) from weather stations, including mean temperature, total precipitation, and other parameters."
+            "The data represents monthly climatological reports (CLIMAT) from weather stations, including mean temperature, total precipitation, and other parameters. See more info in the About section."
         )
     )
 )
