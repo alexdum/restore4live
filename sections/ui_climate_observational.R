@@ -4,6 +4,22 @@ climate_observational_sidebar <- list(
         label = "Area of interest",
         choices = select_area,
         selected = "drb"
+    ),
+    div(
+        style = "margin-top: 20px; padding-top: 10px; border-top: 1px solid #ccc;",
+        tags$h5(icon("info-circle"), " Usage Info"),
+        tags$p(
+            style = "font-size: 0.9em;",
+            "1. Select an Area of Interest.", tags$br(),
+            "2. Click a station marker on the map.", tags$br(),
+            "3. View detailed data in the Dashboard tab."
+        ),
+        tags$hr(),
+        tags$h5(icon("database"), " Data info"),
+        tags$p(
+            style = "font-size: 0.9em;",
+            "The data represents monthly climatological reports (CLIMAT) from weathet stations, including mean temperature, total precipitation, and other parameters."
+        )
     )
 )
 
