@@ -5,6 +5,9 @@
 www/data/shps/
 www/data/ncs/
 www/data/ncs_old/
+www/data/indices
 misc
 www/data/.DS_Store
 app_cache 
+www/data/stations_list_CLIMAT_data.txt
+www/data/tabs/stations_list_CLIMAT_data.txt
