@@ -1,14 +1,35 @@
 source("sections/ui_climate_scenario.R")
 source("sections/ui_area_of_interest.R")
-ui <- 
+source("sections/ui_climate_observational.R")
+ui <-
   page_navbar(
     title = "Danube basin",
     fillable_mobile = T,
-   shinyjs::useShinyjs(),
-   # selected = "About",
+    shinyjs::useShinyjs(),
+    header = tagList(
+      tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
+        tags$script(src = "app.js")
+      ),
+      tags$div(
+        class = "frozen-overlay",
+        tags$div(
+          class = "frozen-overlay-content",
+          tags$button(class = "frozen-overlay-close", icon("times")),
+          tags$div(class = "spinner-border text-primary", role = "status"),
+          tags$div(class = "frozen-overlay-station", ""),
+          tags$p(class = "frozen-overlay-message", "Loading data...")
+        )
+      )
+    ),
+    # selected = "About",
     nav_panel(
       title = "Climate scenario",
       climate_scenario
+    ),
+    nav_panel(
+      title = "Climate observational data",
+      climate_observational
     ),
     nav_panel(
       title = "Remote Sensing",
@@ -29,7 +50,6 @@ ui <-
             value = 0.8,
             step = 0.1,
             ticks = F
-            
           )
         ),
         layout_columns(
