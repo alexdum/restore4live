@@ -77,3 +77,8 @@ body.ui-frozen .navbar {
   pointer-events: none;
   opacity: 0.6;
 }
+
+/* Increase font size for main menu items */
+.navbar-nav .nav-link {
+  font-size: 1.1rem;
+}
