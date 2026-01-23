@@ -68,7 +68,7 @@
 }
 
 /* Disable pointer events on sidebar when frozen */
-body.ui-frozen .bslib-sidebar-layout > .sidebar {
+body.ui-frozen .bslib-sidebar-layout>.sidebar {
   pointer-events: none;
   opacity: 0.6;
 }
@@ -81,4 +81,27 @@ body.ui-frozen .navbar {
 /* Increase font size for main menu items */
 .navbar-nav .nav-link {
   font-size: 1.1rem;
+}
+
+/* Hide Home tab in navbar */
+/* Hide Home tab in navbar */
+.navbar-nav .nav-item:has(.nav-link[data-value="home"]),
+.navbar-nav .nav-link[data-value="home"] {
+  display: none !important;
+}
+
+/* Home Card Styling */
+.home-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  height: 100%;
+}
+
+.home-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+/* Fallback: Hide the first nav item (Home) if other selectors fail */
+.navbar-nav > .nav-item:first-child {
+  display: none !important;
 }

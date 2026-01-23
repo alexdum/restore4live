@@ -8,6 +8,19 @@ $(document).on('shiny:connected', function () {
     $(document).on('click', '.frozen-overlay-close', function () {
         Shiny.setInputValue('cancel_loading', new Date().getTime(), { priority: 'event' });
     });
+
+    // Hide Home tab robustly by checking text content
+    function hideHomeTab() {
+        $('.navbar-nav .nav-link').filter(function () {
+            return $(this).text().trim() === "Home";
+        }).parent().hide();
+    }
+
+    hideHomeTab();
+    // Retry a few times in case of dynamic rendering delays
+    setTimeout(hideHomeTab, 100);
+    setTimeout(hideHomeTab, 500);
+    setTimeout(hideHomeTab, 1000);
 });
 
 // Functions to freeze/unfreeze UI

@@ -263,7 +263,7 @@ output$hydro_map_titl <- renderText({
 })
 
 # reactive values pentru plot lst time series din raster
-hydro_values_plot <- reactiveValues(input = NULL, title = NULL, lon = 25, lat = 46, mode = "point")
+hydro_values_plot <- reactiveValues(input = NULL, title = NULL, lon = 28.389, lat = 45.433, mode = "point")
 
 observeEvent(input$hydro_area, {
     if (input$hydro_area %in% c("at1", "at2", "at3", "at4", "at5", "sk1", "rs1", "ro1", "de1", "sk2", "rs2", "ro2", "ro3", "ro4")) {
