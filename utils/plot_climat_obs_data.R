@@ -11,6 +11,63 @@ plot_climat_obs_data <- function(df, station_name = "") {
     library(plotly)
     library(dplyr)
 
+    # --- Helper Functions (Local) ---
+
+    ensure_temporal_continuity <- function(df, resolution = NULL) {
+        if (is.null(df) || nrow(df) < 2) {
+            return(df)
+        }
+
+        # Auto-detect resolution if not provided
+        if (is.null(resolution)) {
+            dt_diff <- as.numeric(difftime(df$Date[2], df$Date[1], units = "days"))
+            if (!is.na(dt_diff)) {
+                if (dt_diff > 25) {
+                    resolution <- "monthly"
+                } else if (dt_diff >= 0.9) {
+                    resolution <- "daily"
+                } else {
+                    resolution <- "hourly"
+                }
+            } else {
+                resolution <- "daily" # Fallback
+            }
+        }
+
+        # Determine step
+        if (resolution == "monthly") {
+            step <- "1 month"
+        } else if (resolution == "daily") {
+            step <- "1 day"
+        } else {
+            step <- "1 hour"
+        }
+
+        full_time <- seq(from = min(df$Date), to = max(df$Date), by = step)
+        complete_df <- data.frame(Date = full_time)
+        df_out <- dplyr::left_join(complete_df, df, by = "Date")
+        return(df_out)
+    }
+
+    split_into_chunks <- function(df, value_col) {
+        if (!any(is.na(df[[value_col]]))) {
+            return(list(df))
+        }
+
+        is_valid <- !is.na(df[[value_col]])
+        r <- rle(is_valid)
+        end_indices <- cumsum(r$lengths)
+        start_indices <- c(1, head(end_indices, -1) + 1)
+
+        chunks <- list()
+        for (i in seq_along(r$values)) {
+            if (r$values[i]) {
+                chunks[[length(chunks) + 1]] <- df[start_indices[i]:end_indices[i], ]
+            }
+        }
+        return(chunks)
+    }
+
     empty_plot <- function(msg = "No data available") {
         plotly::plot_ly() %>%
             plotly::add_annotations(
@@ -33,6 +90,9 @@ plot_climat_obs_data <- function(df, station_name = "") {
 
     # Ensure Date is Date object
     df$Date <- as.Date(df$Date)
+
+    # Ensure Continuity (Auto-detect)
+    df <- ensure_temporal_continuity(df)
 
     # Calculate date range for display
     data_max <- max(df$Date, na.rm = TRUE)
@@ -58,48 +118,78 @@ plot_climat_obs_data <- function(df, station_name = "") {
 
     # --- Plot 1: Temperature ---
     has_temp <- "MeanTemp" %in% names(df) && any(!is.na(df$MeanTemp))
-    p_temp <- plotly::plot_ly(data = df)
+    p_temp <- plotly::plot_ly(type = "scatter", mode = "lines")
 
     if (has_temp) {
+        # Absolute Max/Min (Filled Envelope)
         if ("MinTempAbs" %in% names(df) && "MaxTempAbs" %in% names(df)) {
-            p_temp <- p_temp %>%
-                add_trace(
-                    x = ~Date, y = ~MinTempAbs, type = "scatter", mode = "lines",
-                    line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
-                    showlegend = FALSE, name = "Abs Min",
-                    hovertemplate = "Abs Min: %{y:.1f}°C<extra></extra>",
-                    connectgaps = FALSE
-                ) %>%
-                add_trace(
-                    x = ~Date, y = ~MaxTempAbs, type = "scatter", mode = "lines",
-                    fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.1)",
-                    line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
-                    name = "Abs Max", showlegend = TRUE,
-                    hovertemplate = "Abs Max: %{y:.1f}°C<extra></extra>",
-                    connectgaps = FALSE
-                )
+            # We need valid pairs for envelope. If one is NA, we can't draw the range.
+            # So we split based on one of them (assuming they usually go together).
+            chunks <- split_into_chunks(df, "MaxTempAbs")
+
+            for (i in seq_along(chunks)) {
+                chunk <- chunks[[i]]
+                if (nrow(chunk) < 2) next
+
+                p_temp <- p_temp %>%
+                    add_trace(
+                        data = chunk,
+                        x = ~Date, y = ~MinTempAbs, type = "scatter", mode = "lines",
+                        line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
+                        showlegend = FALSE, name = "Abs Min",
+                        hovertemplate = "Abs Min: %{y:.1f}°C<extra></extra>",
+                        connectgaps = FALSE,
+                        legendgroup = "abs_range"
+                    ) %>%
+                    add_trace(
+                        data = chunk,
+                        x = ~Date, y = ~MaxTempAbs, type = "scatter", mode = "lines",
+                        fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.1)",
+                        line = list(color = "rgba(211, 47, 47, 0.1)", width = 0),
+                        name = "Abs Max",
+                        showlegend = (i == 1),
+                        hovertemplate = "Abs Max: %{y:.1f}°C<extra></extra>",
+                        connectgaps = FALSE,
+                        legendgroup = "abs_range"
+                    )
+            }
         }
 
+        # Mean Max/Min (Filled Envelope)
         if ("MeanMinTemp" %in% names(df) && "MeanMaxTemp" %in% names(df)) {
-            p_temp <- p_temp %>%
-                add_trace(
-                    x = ~Date, y = ~MeanMinTemp, type = "scatter", mode = "lines",
-                    line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
-                    showlegend = FALSE, name = "Mean Min",
-                    hovertemplate = "Mean Min: %{y:.1f}°C<extra></extra>",
-                    connectgaps = FALSE
-                ) %>%
-                add_trace(
-                    x = ~Date, y = ~MeanMaxTemp, type = "scatter", mode = "lines",
-                    fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.3)",
-                    line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
-                    name = "Mean Max", showlegend = TRUE,
-                    hovertemplate = "Mean Max: %{y:.1f}°C<extra></extra>",
-                    connectgaps = FALSE
-                )
+            chunks <- split_into_chunks(df, "MeanMaxTemp")
+
+            for (i in seq_along(chunks)) {
+                chunk <- chunks[[i]]
+                if (nrow(chunk) < 2) next
+
+                p_temp <- p_temp %>%
+                    add_trace(
+                        data = chunk,
+                        x = ~Date, y = ~MeanMinTemp, type = "scatter", mode = "lines",
+                        line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
+                        showlegend = FALSE, name = "Mean Min",
+                        hovertemplate = "Mean Min: %{y:.1f}°C<extra></extra>",
+                        connectgaps = FALSE,
+                        legendgroup = "mean_range"
+                    ) %>%
+                    add_trace(
+                        data = chunk,
+                        x = ~Date, y = ~MeanMaxTemp, type = "scatter", mode = "lines",
+                        fill = "tonexty", fillcolor = "rgba(211, 47, 47, 0.3)",
+                        line = list(color = "rgba(211, 47, 47, 0.3)", width = 0),
+                        name = "Mean Max",
+                        showlegend = (i == 1),
+                        hovertemplate = "Mean Max: %{y:.1f}°C<extra></extra>",
+                        connectgaps = FALSE,
+                        legendgroup = "mean_range"
+                    )
+            }
         }
 
+        # Main Mean Temp Line (Use full DF with NAs for simple line break)
         p_temp <- p_temp %>% add_lines(
+            data = df,
             x = ~Date, y = ~MeanTemp, name = "Mean Temp",
             line = list(color = "#b71c1c", width = 2),
             hovertemplate = "Mean Temp: %{y:.1f}°C<extra></extra>",
@@ -123,10 +213,11 @@ plot_climat_obs_data <- function(df, station_name = "") {
     # --- Plot 2: Precipitation ---
     has_precip <- "Precipitation" %in% names(df) && any(!is.na(df$Precipitation))
     has_precip_days <- "PrecipDays" %in% names(df) && any(!is.na(df$PrecipDays))
-    p_precip <- plotly::plot_ly(data = df)
+    p_precip <- plotly::plot_ly()
 
     if (has_precip) {
         p_precip <- p_precip %>% add_bars(
+            data = df,
             x = ~Date, y = ~Precipitation, name = "Precipitation",
             marker = list(color = "#1976d2"),
             hovertemplate = "Precip: %{y:.1f} mm<extra></extra>"
@@ -134,6 +225,7 @@ plot_climat_obs_data <- function(df, station_name = "") {
 
         if (has_precip_days) {
             p_precip <- p_precip %>% add_trace(
+                data = df,
                 x = ~Date, y = ~PrecipDays, name = "Precip Days",
                 yaxis = "y2", type = "scatter", mode = "markers",
                 marker = list(color = "#388e3c", size = 5, line = list(color = "yellow", width = 1)),
@@ -158,10 +250,11 @@ plot_climat_obs_data <- function(df, station_name = "") {
 
     # --- Plot 3: Sunshine Duration ---
     has_sun <- "SunshineDuration" %in% names(df) && any(!is.na(df$SunshineDuration))
-    p_sun <- plotly::plot_ly(data = df)
+    p_sun <- plotly::plot_ly()
 
     if (has_sun) {
         p_sun <- p_sun %>% add_bars(
+            data = df,
             x = ~Date, y = ~SunshineDuration, name = "Sunshine",
             marker = list(color = "#fbc02d"),
             hovertemplate = "Sun: %{y:.1f} h<extra></extra>"
@@ -184,27 +277,32 @@ plot_climat_obs_data <- function(df, station_name = "") {
     # --- Plot 4: Pressure (MSLP + Vapour Pressure) ---
     has_vapour <- "VapourPressure" %in% names(df) && any(!is.na(df$VapourPressure))
     has_press <- "MeanSeaLevelPressure" %in% names(df) && any(!is.na(df$MeanSeaLevelPressure))
-    p_pressure <- plotly::plot_ly(data = df)
+    p_pressure <- plotly::plot_ly()
 
     if (has_press) {
         p_pressure <- p_pressure %>%
             add_lines(
+                data = df,
                 x = ~Date, y = ~MeanSeaLevelPressure, name = "MSLP",
                 line = list(color = "#7b1fa2", width = 2),
-                hovertemplate = "MSLP: %{y:.1f} hPa<extra></extra>"
+                hovertemplate = "MSLP: %{y:.1f} hPa<extra></extra>",
+                connectgaps = FALSE
             ) %>%
             add_lines(
                 x = ~Date, y = rep(1013.25, nrow(df)), name = "Std (1013.25)",
                 line = list(color = "grey", dash = "dash", width = 1),
-                hoverinfo = "skip"
+                hoverinfo = "skip",
+                inherit = FALSE
             )
     }
 
     if (has_vapour) {
         p_pressure <- p_pressure %>% add_lines(
+            data = df,
             x = ~Date, y = ~VapourPressure, name = "Vapour Pressure",
             yaxis = "y2", line = list(color = "#2e7d32", width = 2),
-            hovertemplate = "VapPres: %{y:.1f} hPa<extra></extra>"
+            hovertemplate = "VapPres: %{y:.1f} hPa<extra></extra>",
+            connectgaps = FALSE
         )
     }
 
