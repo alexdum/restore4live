@@ -1,5 +1,5 @@
 ---
-title: "Climate Scenarios Report for Area of Interest"
+title: "Climate and Hydrological Scenarios Report for Area of Interest"
 output:
   html_document:
     css: style.css
@@ -10,6 +10,9 @@ params:
   aoi_params: NULL
   aoi_scenarios: NULL
   params_def: NULL
+  hydro_plot_data: NULL
+  hydro_params: NULL
+  hydro_scenarios: NULL
 ---
 
 ```{r setup, include=FALSE}
@@ -264,3 +267,199 @@ for (i in seq_len(nrow(params$aoi_params))) {
     ))
   }
 }
+```
+
+## Hydrological Scenario (RCP)
+
+This section shows annual time series plots for River Discharge under RCP scenarios. The historical baseline period is 1971-2005.
+
+```{r hydro_plots, echo=FALSE, results='asis', warning=FALSE, message=FALSE, dpi=400}
+if (is.null(params$hydro_params) || nrow(params$hydro_params) == 0) {
+  knitr::asis_output(
+    "<p><em>No hydrological parameters were selected for this report.</em></p>"
+  )
+} else {
+  # Loop through each hydro parameter
+  for (i in seq_len(nrow(params$hydro_params))) {
+    param_code <- params$hydro_params$param[i]
+    param_name <- params$hydro_params$name[i]
+
+    # Data Aggregation for Faceting
+    all_hydro_data <- lapply(params$hydro_scenarios, function(scen_code) {
+      plot_id <- paste(param_code, scen_code, sep = "_")
+      df <- params$hydro_plot_data[[plot_id]]
+      
+      if (is.data.frame(df) && nrow(df) > 0 && !all(is.na(df$value))) {
+        # Format RCP label nicely
+        scen_label <- gsub("_", " ", toupper(scen_code))
+        df$scenario <- scen_label
+        return(df)
+      }
+      return(NULL)
+    })
+    
+    combined_hydro_df <- dplyr::bind_rows(all_hydro_data)
+
+    # Header and Plot Generation
+    cat(paste0("<h4>", param_name, "</h4>"))
+
+    if (is.data.frame(combined_hydro_df) && nrow(combined_hydro_df) > 0) {
+      
+      y_label <- "m³/s"
+      
+      if ("date" %in% colnames(combined_hydro_df)) {
+        combined_hydro_df <- combined_hydro_df %>%
+          mutate(date = as.numeric(format(as.Date(date), "%Y")))
+      }
+
+      # Absolute values plots
+      cat(paste0("<h5>", "Absolute values plots", "</h5>"))
+      line_color <- "steelblue"
+      p <- ggplot(combined_hydro_df, aes(x = date)) + 
+        geom_ribbon(aes(ymin = value10, ymax = value90), fill = "grey70", alpha = 0.5) + 
+        geom_line(aes(y = value), color = line_color) + 
+        geom_smooth(aes(y = value), method = "lm", se = FALSE, color = "#252525", linewidth = 0.25) + 
+        facet_wrap(~scenario, ncol = 3) + 
+        scale_x_continuous(breaks = c(1971, 1990, 2010, 2030, 2050, 2070, 2099)) + 
+        labs(
+          x = "Year",
+          y = y_label
+        ) + 
+        theme_minimal(base_size = 10) + 
+        theme(
+          strip.text = element_text(size = 10),
+          axis.title = element_text(size = 10),
+          axis.text = element_text(size = 9),
+          axis.text.x = element_text(angle = 45, hjust = 1)
+        )
+      
+      print(p)
+
+      # Anomaly plots (using 1971-2005 baseline)
+      cat(paste0("<h5>", "Anomaly values plots (% change vs 1971-2005)", "</h5>"))
+      historical_mean <- combined_hydro_df %>% 
+        filter(date >= 1971 & date <= 2005) %>%
+        summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+        pull(mean_value)
+
+      if (!is.na(historical_mean) && historical_mean != 0) {
+        combined_hydro_df <- combined_hydro_df %>% 
+          mutate(
+            anomaly = ((value - historical_mean) / historical_mean) * 100,
+            anomaly10 = ((value10 - historical_mean) / historical_mean) * 100,
+            anomaly90 = ((value90 - historical_mean) / historical_mean) * 100
+          )
+        y_label_anomaly <- "Anomaly (%)"
+
+        p_anomaly <- ggplot(combined_hydro_df, aes(x = date)) +
+          geom_ribbon(aes(ymin = anomaly10, ymax = anomaly90), fill = "grey70", alpha = 0.5) +
+          geom_line(aes(y = anomaly), color = "steelblue") +
+          geom_smooth(aes(y = anomaly), method = "lm", se = FALSE, color = "black", linewidth = 0.5) +
+          facet_wrap(~scenario, ncol = 3) + 
+          scale_x_continuous(breaks = c(1971, 1990, 2010, 2030, 2050, 2070, 2099)) + 
+          labs(
+            x = "Year",
+            y = y_label_anomaly
+          ) + 
+          theme_minimal(base_size = 10) + 
+          theme(
+            strip.text = element_text(size = 10),
+            axis.title = element_text(size = 10),
+            axis.text = element_text(size = 9),
+            axis.text.x = element_text(angle = 45, hjust = 1)
+          )
+        
+        print(p_anomaly)
+      }
+
+    } else {
+      knitr::asis_output(
+        paste0("<p><em>Data not available for this parameter.</em></p>")
+      )
+    }
+
+    if (i < nrow(params$hydro_params)) {
+      knitr::asis_output("\n<hr/>\n\n")
+    }
+  }
+}
+```
+
+#### Summarising hydrological scenario
+
+```{r hydro_summary_table, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+# Define the periods for hydro (historical: 1971-2005)
+hydro_hist_period <- 1971:2005
+hydro_future_periods <- list(
+  "2041-2060" = 2041:2060,
+  "2061-2080" = 2061:2080,
+  "2081-2099" = 2081:2099
+)
+
+if (!is.null(params$hydro_params) && nrow(params$hydro_params) > 0) {
+  for (i in seq_len(nrow(params$hydro_params))) {
+    param_code <- params$hydro_params$param[i]
+    param_name <- params$hydro_params$name[i]
+
+    summary_list <- list()
+
+    for (scen_code in params$hydro_scenarios) {
+      plot_id <- paste(param_code, scen_code, sep = "_")
+      df <- params$hydro_plot_data[[plot_id]]
+
+      if (is.data.frame(df) && nrow(df) > 0) {
+        if ("date" %in% colnames(df) && !is.numeric(df$date)) {
+          df <- df %>%
+            mutate(date = as.numeric(format(as.Date(date), "%Y")))
+        }
+
+        historical_mean <- df %>%
+          filter(date %in% hydro_hist_period) %>%
+          summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+          pull(mean_value)
+
+        if (length(historical_mean) > 0 && !is.na(historical_mean) && historical_mean != 0) {
+          for (period_name in names(hydro_future_periods)) {
+            future_period <- hydro_future_periods[[period_name]]
+            
+            future_mean <- df %>%
+              filter(date %in% future_period) %>%
+              summarise(mean_value = mean(value, na.rm = TRUE)) %>%
+              pull(mean_value)
+
+            if (length(future_mean) > 0 && !is.na(future_mean)) {
+              # Percentage change for discharge
+              change <- ((future_mean - historical_mean) / historical_mean) * 100
+              scen_label <- gsub("_", " ", toupper(scen_code))
+              
+              summary_list[[length(summary_list) + 1]] <- data.frame(
+                Scenario = scen_label,
+                Period = period_name,
+                Historical_Mean = round(historical_mean, 1),
+                Future_Mean = round(future_mean, 1),
+                Change_Pct = round(change, 1)
+              )
+            }
+          }
+        }
+      }
+    }
+
+    if (length(summary_list) > 0) {
+      summary_df <- do.call(rbind, summary_list)
+      
+      summary_wide <- summary_df %>%
+        tidyr::pivot_wider(
+          names_from = Period,
+          values_from = c("Future_Mean", "Change_Pct"),
+          names_sep = "_"
+        )
+
+      cat(paste0("<h5>", param_name, "</h5>"))
+      print(knitr::kable(
+        summary_wide
+      ))
+    }
+  }
+}
+```
