@@ -34,6 +34,9 @@ source("utils/parse_weather_dwd.R", local = T)
 source("utils/plot_climat_obs_data.R", local = T)
 
 files_cmip6 <- list.files("www/data/ncs/cmip6", full.names = T, recursive = T)
+files_rdis <- list.files("www/data/ncs/rdis", full.names = T, recursive = T)
+
+
 
 dun <- st_read("www/data/shps/DRBMP2015_DRBD.gpkg", quiet = T)
 is1_austria <- st_read("www/data/shps/IS1_Austria.gpkg", quiet = T)
@@ -94,3 +97,6 @@ select_seas <- setNames(select_seas$choice, select_seas$parameter)
 # definitie parametri
 
 params_def <- read.csv("www/data/tabs/params_clim.txt", fileEncoding = "UTF-8")
+
+source("sections/ui_hydrological_scenario.R", local = T)
+source("utils/graph_title_hydrology.R", local = T) # titlu grafic scenarii hidrologice

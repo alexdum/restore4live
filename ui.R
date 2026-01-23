@@ -28,6 +28,10 @@ ui <-
       climate_scenario
     ),
     nav_panel(
+      title = "Hydrological scenario",
+      hydrological_scenario
+    ),
+    nav_panel(
       title = "Climate observational data",
       climate_observational
     ),

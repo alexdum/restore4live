@@ -7,3 +7,4 @@ Number of tropical nights (annual count of days when daily minimum temperature >
 Warm spell duration index: annual count of days with at least 6 consecutive days when maximum temperature > 90th percentile,wsdi,Days
 Cold spell duration index: annual count of days with at least 6 consecutive days when minimum temperature < 10th percentile,csdi,Days
 Growing season length: annual count between the first span of at least 6 days with daily mean temperature TG > 5 °C and the first span after July 1st  of 6 days with TG < 5 °C,gsl,Days
+River discharge,rdis,m³/s

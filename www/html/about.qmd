@@ -60,6 +60,52 @@ A resurgent nationalism, concerns about competitiveness and security, and region
 
 This world places increasing faith in competitive markets, innovation and participatory societies to produce rapid technological progress and development of human capital as the path to sustainable development. Global markets are increasingly integrated. There are also strong investments in health, education, and institutions to enhance human and social capital. At the same time, the push for economic and social development is coupled with the exploitation of abundant fossil fuel resources and the adoption of resource and energy intensive lifestyles around the world. All these factors lead to rapid growth of the global economy, while global population peaks and declines in the 21st century. Local environmental problems like air pollution are successfully managed. There is faith in the ability to effectively manage social and ecological systems, including by geo-engineering if necessary.
 
+#### Hydrological scenario
+
+The hydrological projections were derived using the **e_hypegrid** hydrological model, based on data from the **Copernicus Climate Data Store** dataset `sis-hydrology-variables-derived-projections` [@copernicus_hydrology_2021].
+
+The variable used is **River discharge**.
+
+**Simulations**
+
+A total of 9 GCM-RCM combinations were used, involving 3 General Circulation Models (GCMs) and 3 Regional Climate Models (RCMs).
+
+| GCM Model | RCM Model |
+|:---|:---|
+| ICHEC-EC-EARTH | SMHI-RCA4 |
+| ICHEC-EC-EARTH | GERICS-REMO2009 |
+| ICHEC-EC-EARTH | CLMcom-CCLM4-8-17 |
+| MPI-M-MPI-ESM-LR | SMHI-RCA4 |
+| MPI-M-MPI-ESM-LR | GERICS-REMO2009 |
+| MPI-M-MPI-ESM-LR | CLMcom-CCLM4-8-17 |
+| MOHC-HadGEM2-ES | SMHI-RCA4 |
+| MOHC-HadGEM2-ES | GERICS-REMO2009 |
+| MOHC-HadGEM2-ES | CLMcom-CCLM4-8-17 |
+
+: Models processed for the Hydrological Scenario section {.striped .hover #tbl-hydro-models}
+
+**Scenarios**
+
+The following experiments were selected:
+
+##### Historical (1971-2005)
+
+Represents the baseline climate conditions, used to calibrate the models and provide a reference for future projections.
+
+##### RCP 2.6 (2006-2100)
+
+A stringent mitigation scenario (equivalent to **SSP1-2.6**). It aims to keep global warming likely below 2°C above pre-industrial temperatures. Radiative forcing peaks at approximately 3 W/m² before 2100 and then declines to 2.6 W/m² by 2100.
+
+##### RCP 4.5 (2006-2100)
+
+An intermediate scenario (equivalent to **SSP2-4.5**). Emissions peak around 2040, then decline. Radiative forcing stabilizes at approximately 4.5 W/m² after 2100.
+
+##### RCP 8.5 (2006-2100)
+
+A high greenhouse gas emissions scenario (equivalent to **SSP5-8.5**). Emissions continue to rise throughout the 21st century. Radiative forcing reaches 8.5 W/m² by 2100.
+
+**Period**: 1971-2100
+
 #### Climate observational data
 
 This section provides access to **monthly climatological reports (CLIMAT)** from land stations. These reports are sourced from the **Deutscher Wetterdienst (DWD) Open Data Server** and provide a valuable historical record of weather conditions.
