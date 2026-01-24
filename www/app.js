@@ -9,6 +9,14 @@ $(document).on('shiny:connected', function () {
         Shiny.setInputValue('cancel_loading', new Date().getTime(), { priority: 'event' });
     });
 
+    // Auto-collapse mobile menu when a link is clicked
+    $(document).on('click', '.navbar-collapse.in .nav-link', function () {
+        var toggle = $('.navbar-toggler');
+        if (toggle.is(':visible')) {
+            toggle.click();
+        }
+    });
+
     // Hide Home tab robustly by checking text content
     function hideHomeTab() {
         $('.navbar-nav .nav-link').filter(function () {

@@ -6,7 +6,7 @@ ui <-
   page_navbar(
     id = "navbar",
     title = actionLink("nav_brand", "Danube basin", class = "navbar-brand"),
-    fillable_mobile = T,
+    fillable_mobile = FALSE,
     shinyjs::useShinyjs(),
     nav_panel(
       title = "Home",
