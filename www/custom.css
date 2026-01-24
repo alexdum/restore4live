@@ -101,7 +101,27 @@ body.ui-frozen .navbar {
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
   cursor: pointer;
 }
+
 /* Fallback: Hide the first nav item (Home) if other selectors fail */
-.navbar-nav > .nav-item:first-child {
+.navbar-nav>.nav-item:first-child {
   display: none !important;
+}
+
+/* Fix mobile layout for About section */
+/* Fix mobile layout for About section */
+@media (max-width: 991px) {
+
+  /* Force container height */
+  #about {
+    height: 85vh !important;
+    min-height: 500px !important;
+    display: block !important;
+  }
+
+  /* Force iframe height to fill container or viewport */
+  #about iframe {
+    height: 85vh !important;
+    min-height: 500px !important;
+    width: 100% !important;
+  }
 }
