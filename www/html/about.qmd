@@ -27,7 +27,7 @@ The dataset was derived from simulations of eight models, with results aggregate
 | NORESM2_MM    | r1i1p1f1 | 1.25 x 0.94    | 138.87 x 104.43 |
 | UKESM1_0_LL   | r1i1p1f2 | 1.87 x 1.25    | 207.75 x 138.87 |
 
-: Models processed for the Climate Scenario section {.striped .hover #tbl-cap-location: top}
+: Models processed for the Climate Scenario section {.striped .hover #tbl-climate-models}
 
 
 The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.
@@ -38,7 +38,7 @@ The changes were computed as absolute differences for air temperature (maximum, 
 |Mean of daily maximum temperature|°C|
 |Mean of daily minimum temperature|°C|
 |Precipitation|mm|
-: Variable sleected {.striped .hover #tbl-cap-location: top}
+: Variable selected {.striped .hover #tbl-climate-vars}
 
 
 
