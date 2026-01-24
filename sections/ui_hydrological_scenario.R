@@ -102,18 +102,19 @@ hydrological_scenario <-
             hydrological_scenario_sidebar
         ),
         layout_columns(
+            col_widths = breakpoints(sm = 12, md = 6, lg = 6, xl = 6),
             # width = 1/2,
             # heights_equal = "row",
             # Show results
             card(
                 card_header(textOutput("hydro_map_titl")),
                 full_screen = T,
-                leafletOutput("hydro_map", height = "450px")
+                leafletOutput("hydro_map", height = "60vh")
             ),
             card(
                 card_header(textOutput("hydro_graph_titl")),
                 full_screen = T,
-                highchartOutput("hydro_chart_scen", height = "450px")
+                highchartOutput("hydro_chart_scen", height = "60vh")
             )
         )
     )

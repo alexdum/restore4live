@@ -117,18 +117,19 @@ climate_scenario <-
       climate_scenario_sidebar
     ),
     layout_columns(
+      col_widths = breakpoints(sm = 12, md = 6, lg = 6, xl = 6),
       # width = 1/2,
       # heights_equal = "row",
       # Show results
       card(
         card_header(textOutput("map_titl")),
         full_screen = T,
-        leafletOutput("map", height = "450px")
+        leafletOutput("map", height = "60vh")
       ),
       card(
         card_header(textOutput("graph_titl")),
         full_screen = T,
-        highchartOutput("chart_scen", height = "450px")
+        highchartOutput("chart_scen", height = "60vh")
       )
     )
   )

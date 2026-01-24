@@ -53,8 +53,8 @@ climate_observational <-
                         nav_panel(
                             "Plots",
                             layout_columns(
-                                col_widths = c(6, 6),
-                                row_heights = c("calc(50vh - 130px)", "calc(50vh - 130px)"),
+                                col_widths = breakpoints(sm = 12, md = 6, lg = 6, xl = 6),
+                                row_heights = c("32vh", "32vh"),
                                 card(
                                     full_screen = TRUE,
                                     card_header("Temperature"),

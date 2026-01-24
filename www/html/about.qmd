@@ -16,6 +16,7 @@ bibliography: references.bib
 The dataset was derived from simulations of eight models, with results aggregated using the ensemble median, alongside the 10th and 90th percentiles to capture variability. A bias-correction technique, specifically Quantile Delta Mapping (QDM), was implemented within a spatial disaggregation framework. This approach aimed to mitigate uncertainties stemming from systematic model biases and enhance the spatial resolution of the projected data [@smau_bias-corrected_2024].
 
 
+::: {.table-responsive}
 | Model         | Run      | Resolution (°) | Resolution (km) |
 |:--------------|:---------|:---------------|:----------------|
 | CNRM_ESM2_1   | r1i1p1f2 | 1.4 x 1.4      | 155.54          |
@@ -28,10 +29,12 @@ The dataset was derived from simulations of eight models, with results aggregate
 | UKESM1_0_LL   | r1i1p1f2 | 1.87 x 1.25    | 207.75 x 138.87 |
 
 : Models processed for the Climate Scenario section {.striped .hover #tbl-climate-models}
+:::
 
 
 The changes were computed as absolute differences for air temperature (maximum, minimum and average), and as relative changes for precipitation.
 
+::: {.table-responsive}
 | Variable name  | Units   |
 |:--------------|:---------|
 |Mean temperature|°C|
@@ -39,6 +42,7 @@ The changes were computed as absolute differences for air temperature (maximum, 
 |Mean of daily minimum temperature|°C|
 |Precipitation|mm|
 : Variable selected {.striped .hover #tbl-climate-vars}
+:::
 
 
 
@@ -70,6 +74,7 @@ The variable used is **River discharge**.
 
 A total of 9 GCM-RCM combinations were used, involving 3 General Circulation Models (GCMs) and 3 Regional Climate Models (RCMs).
 
+::: {.table-responsive}
 | GCM Model | RCM Model |
 |:---|:---|
 | ICHEC-EC-EARTH | SMHI-RCA4 |
@@ -83,6 +88,7 @@ A total of 9 GCM-RCM combinations were used, involving 3 General Circulation Mod
 | MOHC-HadGEM2-ES | CLMcom-CCLM4-8-17 |
 
 : Models processed for the Hydrological Scenario section {.striped .hover #tbl-hydro-models}
+:::
 
 **Scenarios**
 
@@ -114,6 +120,7 @@ This section provides access to **monthly climatological reports (CLIMAT)** from
 
 The following parameters are extracted and visualized:
 
+::: {.table-responsive}
 | Parameter | Unit | Description |
 |:----------|:-----|:------------|
 | **Mean Temperature** | °C | Monthly mean air temperature |
@@ -128,6 +135,7 @@ The following parameters are extracted and visualized:
 | **Vapour Pressure** | hPa | Monthly mean vapour pressure |
 
 : Climate Observational Parameters {.striped .hover #tbl-obs-params}
+:::
 
 **Visualization:**
 The data is presented in an interactive dashboard allowing users to:
