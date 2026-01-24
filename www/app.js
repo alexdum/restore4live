@@ -10,12 +10,21 @@ $(document).on('shiny:connected', function () {
     });
 
     // Auto-collapse mobile menu when a link is clicked
-    // Targeting both .in (BS3/4) and .show (BS5) for compatibility
-    $(document).on('click', '.navbar-collapse.in .nav-link, .navbar-collapse.show .nav-link', function () {
-        var toggle = $('.navbar-toggler');
-        // Check if toggler is visible (mobile view)
-        if (toggle.is(':visible')) {
-            toggle.trigger('click');
+    // bslib doesn't strictly have an option for this, so we use the native Bootstrap API
+    $(document).on('click', '.navbar-collapse.show .nav-link', function (e) {
+        // Only act if the toggler is visible (mobile mode)
+        if ($('.navbar-toggler').is(':visible')) {
+            // Use Native Bootstrap 5 API to find and hide the collapsible element
+            // This is more robust than clicking the toggler
+            var collapseEl = $(this).closest('.navbar-collapse')[0];
+            if (collapseEl) {
+                // Try getting existing instance or creating new one
+                var bsCollapse = bootstrap.Collapse.getInstance(collapseEl);
+                if (!bsCollapse) {
+                    bsCollapse = new bootstrap.Collapse(collapseEl, { toggle: false });
+                }
+                bsCollapse.hide();
+            }
         }
     });
 
