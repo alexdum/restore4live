@@ -10,10 +10,12 @@ $(document).on('shiny:connected', function () {
     });
 
     // Auto-collapse mobile menu when a link is clicked
-    $(document).on('click', '.navbar-collapse.in .nav-link', function () {
+    // Targeting both .in (BS3/4) and .show (BS5) for compatibility
+    $(document).on('click', '.navbar-collapse.in .nav-link, .navbar-collapse.show .nav-link', function () {
         var toggle = $('.navbar-toggler');
+        // Check if toggler is visible (mobile view)
         if (toggle.is(':visible')) {
-            toggle.click();
+            toggle.trigger('click');
         }
     });
 
