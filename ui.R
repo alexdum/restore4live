@@ -15,8 +15,8 @@ ui <-
     ),
     header = tagList(
       tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css?v=1.0"),
-        tags$script(src = "app.js")
+        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css?v=2.2"),
+        tags$script(src = "app.js?v=1.2")
       ),
       tags$div(
         class = "frozen-overlay",

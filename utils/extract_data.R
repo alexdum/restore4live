@@ -93,7 +93,7 @@ extract_data <- function(file_hist, file_scen, dataset_function, lon, lat, param
     )
     
     if (is.na(baseline_mean) || baseline_mean == 0) {
-      return("Could not calculate baseline for change analysis.")
+      return("Could not calculate baseline for change analysis. Click another point on the map with a baseline value greater than 0.")
     }
     
     # Calculate the change relative to the baseline

@@ -37,6 +37,38 @@ function closeNavbarMenu() {
     }
 }
 
+function resizeMaplibreWidgets() {
+    document.querySelectorAll('[id]').forEach(function (element) {
+        if (element && element.__mapgl && typeof element.__mapgl.resize === 'function') {
+            element.__mapgl.resize();
+        }
+    });
+}
+
+function reflowHighchartsWidgets() {
+    if (!window.Highcharts || !Array.isArray(window.Highcharts.charts)) {
+        return;
+    }
+
+    window.Highcharts.charts.forEach(function (chart) {
+        if (chart && typeof chart.reflow === 'function') {
+            chart.reflow();
+        }
+    });
+}
+
+function refreshResponsiveWidgets() {
+    resizeMaplibreWidgets();
+    reflowHighchartsWidgets();
+    window.dispatchEvent(new Event('resize'));
+}
+
+function scheduleResponsiveWidgetRefresh() {
+    [0, 200, 450].forEach(function (delay) {
+        window.setTimeout(refreshResponsiveWidgets, delay);
+    });
+}
+
 function initAppHandlers() {
     if (window.__restore4liveHandlersInitialized) {
         return;
@@ -126,6 +158,59 @@ function initAppHandlers() {
     setTimeout(hideHomeTab, 100);
     setTimeout(hideHomeTab, 500);
     setTimeout(hideHomeTab, 1000);
+
+    function bindMapLayerControls() {
+        var controls = document.querySelectorAll('.map-layer-control');
+        controls.forEach(function (control) {
+            if (control.dataset.codexBound === 'true') {
+                return;
+            }
+            control.dataset.codexBound = 'true';
+
+            control.addEventListener('mouseenter', function () {
+                control.classList.add('expanded');
+            });
+
+            control.addEventListener('mouseleave', function () {
+                control.classList.remove('expanded');
+            });
+
+            var icon = control.querySelector('.control-icon');
+            if (icon) {
+                icon.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    control.classList.toggle('expanded');
+                });
+            }
+
+            control.addEventListener('change', function (event) {
+                var target = event.target;
+                if (!target) {
+                    return;
+                }
+                if (target.matches('input[type="radio"], input[type="checkbox"]')) {
+                    control.classList.remove('expanded');
+                }
+            });
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.map-layer-control')) {
+            document.querySelectorAll('.map-layer-control.expanded').forEach(function (control) {
+                control.classList.remove('expanded');
+            });
+        }
+    });
+
+    bindMapLayerControls();
+    setTimeout(bindMapLayerControls, 200);
+    setTimeout(bindMapLayerControls, 1000);
+
+    document.addEventListener('bslib.card', function () {
+        scheduleResponsiveWidgetRefresh();
+    });
 
 }
 

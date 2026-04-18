@@ -10,156 +10,13 @@ obs_style_change_trigger <- reactiveVal(0)
 obs_map_initialized <- reactiveVal(FALSE)
 obs_current_raster_layers <- reactiveVal(character(0))
 selected_station_obs_id <- reactiveVal(NULL)
-
-obs_label_layer_ids <- c(
-    "waterway_line_label", "water_name_point_label", "water_name_line_label",
-    "highway-name-path", "highway-name-minor", "highway-name-major",
-    "highway-shield-non-us", "highway-shield-us-interstate", "road_shield_us",
-    "airport", "label_other", "label_village", "label_town", "label_state",
-    "label_city", "label_city_capital", "label_country_3", "label_country_2", "label_country_1",
-    "road_oneway", "road_oneway_opposite", "poi_r20", "poi_r7", "poi_r1", "poi_transit",
-    "waterway-line-label", "water-name-point-label", "water-name-line-label",
-    "road-shield-us", "label-other", "label-village", "label-town", "label-state",
-    "label-city", "label-city-capital", "label-country-3", "label-country-2", "label-country-1",
-    "place_villages", "place_town", "place_country_2", "place_country_1",
-    "place_state", "place_continent", "place_city_r6", "place_city_r5",
-    "place_city_dot_r7", "place_city_dot_r4", "place_city_dot_r2", "place_city_dot_z7",
-    "place_capital_dot_z7", "place_capital", "roadname_minor", "roadname_sec",
-    "roadname_pri", "roadname_major", "motorway_name", "watername_ocean",
-    "watername_sea", "watername_lake", "watername_lake_line", "poi_stadium",
-    "poi_park", "poi_zoo", "airport_label", "country-label", "state-label",
-    "settlement-major-label", "settlement-minor-label", "settlement-subdivision-label",
-    "road-label", "waterway-label", "natural-point-label", "poi-label", "airport-label"
-)
-
-obs_non_label_layer_ids <- c(
-    "background", "park", "water", "landcover_ice_shelf", "landcover_glacier",
-    "landuse_residential", "landcover_wood", "waterway", "building",
-    "tunnel_motorway_casing", "tunnel_motorway_inner", "aeroway-taxiway",
-    "aeroway-runway-casing", "aeroway-area", "aeroway-runway",
-    "road_area_pier", "road_pier", "highway_path", "highway_minor",
-    "highway_major_casing", "highway_major_inner", "highway_major_subtle",
-    "highway_motorway_casing", "highway_motorway_inner", "highway_motorway_subtle",
-    "railway_transit", "railway_transit_dashline", "railway_service",
-    "railway_service_dashline", "railway", "railway_dashline",
-    "highway_motorway_bridge_casing", "highway_motorway_bridge_inner",
-    "boundary_3", "boundary_2", "boundary_disputed"
-)
-
-get_obs_shape <- function(area_id) {
-    switch(area_id,
-        "drb" = dun,
-        "at1" = is1_austria[1, ],
-        "at2" = is1_austria[2, ],
-        "at3" = is1_austria[3, ],
-        "at4" = is1_austria[4, ],
-        "at5" = is1_austria[5, ],
-        "sk1" = is2_slovakia,
-        "rs1" = is3_serbia,
-        "ro1" = is4_romania,
-        "de1" = ms1_germany,
-        "sk2" = ms2_slovakia,
-        "rs2" = ms3_serbia,
-        "ro2" = ms4_romania,
-        "ro3" = ms5_romania,
-        "ro4" = ms6_romania,
-        dun
-    )
-}
-
-get_obs_area_label <- function(area_id) {
-    label <- names(select_area[select_area == area_id])
-    if (length(label) == 0) {
-        return("Danube River Basin")
-    }
-    label[[1]]
-}
-
-get_obs_bbox <- function(shape, buffer_m = 10000) {
-    shape_metric <- sf::st_transform(sf::st_make_valid(shape), 3035)
-    if (!is.null(buffer_m) && buffer_m > 0) {
-        shape_metric <- sf::st_buffer(shape_metric, dist = buffer_m)
-    }
-    bbox <- sf::st_bbox(sf::st_transform(shape_metric, 4326))
-    unname(c(bbox[["xmin"]], bbox[["ymin"]], bbox[["xmax"]], bbox[["ymax"]]))
-}
-
-build_obs_station_label <- function(station_row) {
-    lat_val <- round(station_row$Latitude[[1]], 4)
-    lon_val <- round(station_row$Longitude[[1]], 4)
-    paste0(
-        "<div style='font-size:14px; min-width: 220px;'>",
-        "<b>WMO Station ID:</b> ", htmltools::htmlEscape(as.character(station_row$StationID[[1]])), "<br>",
-        "<b>Station Name:</b> ", htmltools::htmlEscape(as.character(station_row$StationName[[1]])), "<br>",
-        "<b>Latitude:</b> ", lat_val, "<br>",
-        "<b>Longitude:</b> ", lon_val, "<br>",
-        "<b>Altitude (Height):</b> ", station_row$Height[[1]], " m<br>",
-        "<b>Country:</b> ", htmltools::htmlEscape(as.character(station_row$Country[[1]])),
-        "</div>"
-    )
-}
-
-apply_obs_label_visibility <- function(proxy, show_labels) {
-    visibility <- if (isTRUE(show_labels)) "visible" else "none"
-    for (layer_id in obs_label_layer_ids) {
-        tryCatch(
-            {
-                proxy %>% mapgl::set_layout_property(layer_id, "visibility", visibility)
-            },
-            error = function(e) {
-                NULL
-            }
-        )
-    }
-}
-
-highlight_selected_obs_station <- function(proxy, station_row, move_map = TRUE) {
-    highlight_data <- sf::st_as_sf(
-        data.frame(
-            Longitude = station_row$Longitude[[1]],
-            Latitude = station_row$Latitude[[1]],
-            station_label = build_obs_station_label(station_row)
-        ),
-        coords = c("Longitude", "Latitude"),
-        crs = 4326
-    )
-
-    proxy <- proxy %>%
-        mapgl::clear_layer("selected-highlight") %>%
-        mapgl::add_circle_layer(
-            id = "selected-highlight",
-            source = highlight_data,
-            circle_color = "#dc2626",
-            circle_radius = 11,
-            circle_stroke_color = "#b91c1c",
-            circle_stroke_width = 3,
-            circle_opacity = 0.35,
-            tooltip = "station_label",
-            before_id = "waterway_line_label"
-        )
-
-    if (isTRUE(move_map)) {
-        proxy <- proxy %>%
-            mapgl::fly_to(
-                center = c(station_row$Longitude[[1]], station_row$Latitude[[1]]),
-                zoom = 8
-            )
-    }
-
-    proxy
-}
+obs_label_layer_ids <- maplibre_label_layer_ids
+obs_non_label_layer_ids <- maplibre_non_label_layer_ids
 
 # Invalidate map size when switching tabs (fixes rendering issues)
 observeEvent(input$obs_tab, {
     if (input$obs_tab == "Map View") {
-        shinyjs::runjs("
-            setTimeout(function() {
-                var map = document.getElementById('map_obs');
-                if (map && map.__mapgl) {
-                    map.__mapgl.resize();
-                }
-            }, 200);
-        ")
+        shinyjs::runjs(maplibre_resize_script("map_obs"))
     }
 })
 
@@ -178,7 +35,7 @@ observe({
     req(input$map_obs_zoom)
 
     mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::fit_bounds(get_obs_bbox(dun, buffer_m = 0), animate = FALSE)
+        mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = FALSE)
 
     obs_map_initialized(TRUE)
 })
@@ -187,101 +44,34 @@ observeEvent(input$zoom_home_obs, {
     req(obs_map_initialized())
 
     mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::fit_bounds(get_obs_bbox(dun, buffer_m = 0), animate = TRUE)
+        mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = TRUE)
 })
 
 observeEvent(input$basemap_obs, {
     req(obs_map_initialized())
-
-    proxy <- mapgl::maplibre_proxy("map_obs")
-    basemap <- input$basemap_obs
-
-    old_layers <- isolate(obs_current_raster_layers())
-    if (length(old_layers) > 0) {
-        for (layer_id in old_layers) {
-            proxy %>% mapgl::clear_layer(layer_id)
-        }
-        obs_current_raster_layers(character(0))
-    }
-
-    if (basemap %in% c("ofm_positron", "ofm_bright")) {
-        style_url <- switch(basemap,
-            "ofm_positron" = ofm_positron_style,
-            "ofm_bright" = ofm_bright_style
-        )
-
-        proxy %>%
-            mapgl::set_style(style_url, preserve_layers = FALSE)
-
-        current_session <- shiny::getDefaultReactiveDomain()
-        selected_basemap <- basemap
-
-        later::later(function() {
-            shiny::withReactiveDomain(current_session, {
-                if (!identical(isolate(input$basemap_obs), selected_basemap)) {
-                    return()
-                }
-
-                apply_obs_label_visibility(mapgl::maplibre_proxy("map_obs"), isolate(input$show_labels_obs))
-                obs_style_change_trigger(isolate(obs_style_change_trigger()) + 1)
-            })
-        }, delay = 0.5)
-    } else if (basemap == "sentinel") {
-        proxy %>%
-            mapgl::set_style(ofm_positron_style, preserve_layers = FALSE)
-
-        current_session <- shiny::getDefaultReactiveDomain()
-        selected_basemap <- basemap
-
-        later::later(function() {
-            shiny::withReactiveDomain(current_session, {
-                if (!identical(isolate(input$basemap_obs), selected_basemap)) {
-                    return()
-                }
-
-                unique_suffix <- as.integer(as.numeric(Sys.time()) * 1000)
-                source_id <- paste0("obs_sentinel_source_", unique_suffix)
-                layer_id <- paste0("obs_sentinel_layer_", unique_suffix)
-
-                mapgl::maplibre_proxy("map_obs") %>%
-                    mapgl::add_raster_source(
-                        id = source_id,
-                        tiles = sentinel_url,
-                        tileSize = 256,
-                        attribution = sentinel_attribution
-                    ) %>%
-                    mapgl::add_layer(
-                        id = layer_id,
-                        type = "raster",
-                        source = source_id,
-                        paint = list("raster-opacity" = 1),
-                        before_id = "background"
-                    )
-
-                for (layer_id_kill in obs_non_label_layer_ids) {
-                    tryCatch(
-                        {
-                            mapgl::maplibre_proxy("map_obs") %>%
-                                mapgl::set_layout_property(layer_id_kill, "visibility", "none")
-                        },
-                        error = function(e) {
-                            NULL
-                        }
-                    )
-                }
-
-                apply_obs_label_visibility(mapgl::maplibre_proxy("map_obs"), isolate(input$show_labels_obs))
-                obs_current_raster_layers(c(layer_id))
-                obs_style_change_trigger(isolate(obs_style_change_trigger()) + 1)
-            })
-        }, delay = 0.5)
-    }
+    maplibre_switch_basemap(
+        map_id = "map_obs",
+        basemap = input$basemap_obs,
+        current_basemap = function() input$basemap_obs,
+        show_labels = function() input$show_labels_obs,
+        current_raster_layers = obs_current_raster_layers,
+        style_change_trigger = obs_style_change_trigger,
+        sentinel_ids = function() {
+            unique_suffix <- as.integer(as.numeric(Sys.time()) * 1000)
+            list(
+                source_id = paste0("obs_sentinel_source_", unique_suffix),
+                layer_id = paste0("obs_sentinel_layer_", unique_suffix)
+            )
+        },
+        label_layer_ids = obs_label_layer_ids,
+        non_label_layer_ids = obs_non_label_layer_ids
+    )
 })
 
 observeEvent(input$show_labels_obs,
     {
         req(obs_map_initialized())
-        apply_obs_label_visibility(mapgl::maplibre_proxy("map_obs"), input$show_labels_obs)
+        maplibre_apply_label_visibility(mapgl::maplibre_proxy("map_obs"), input$show_labels_obs, obs_label_layer_ids)
     },
     ignoreInit = TRUE
 )
@@ -290,53 +80,35 @@ observe({
     req(obs_map_initialized())
 
     obs_style_change_trigger()
-    selected_shape <- get_obs_shape(input$test_area_obs)
-    selected_label <- get_obs_area_label(input$test_area_obs)
-
-    proxy <- mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::clear_layer("obs-danube-fill") %>%
-        mapgl::clear_layer("obs-danube-line") %>%
-        mapgl::clear_layer("obs-area-fill") %>%
-        mapgl::clear_layer("obs-area-line")
-
-    proxy <- proxy %>%
-        mapgl::add_fill_layer(
-            id = "obs-danube-fill",
-            source = dun,
-            fill_color = "#1d4ed8",
-            fill_opacity = 0.025,
-            before_id = "waterway_line_label"
+    selected_shape <- maplibre_get_area_shape(
+        input$test_area_obs,
+        dun,
+        is1_austria,
+        is2_slovakia,
+        is3_serbia,
+        is4_romania,
+        ms1_germany,
+        ms2_slovakia,
+        ms3_serbia,
+        ms4_romania,
+        ms5_romania,
+        ms6_romania
+    )
+    selected_shape <- if (!identical(input$test_area_obs, "drb")) {
+        dplyr::mutate(
+            sf::st_as_sf(selected_shape),
+            area_label = maplibre_get_area_label(input$test_area_obs, select_area)
         ) %>%
-        mapgl::add_line_layer(
-            id = "obs-danube-line",
-            source = dun,
-            line_color = "#0f172a",
-            line_width = 1.2,
-            line_opacity = 0.8,
-            before_id = "waterway_line_label"
-        )
-
-    if (!identical(input$test_area_obs, "drb")) {
-        selected_shape <- dplyr::mutate(sf::st_as_sf(selected_shape), area_label = selected_label)
-
-        proxy %>%
-            mapgl::add_fill_layer(
-                id = "obs-area-fill",
-                source = selected_shape,
-                fill_color = "#facc15",
-                fill_opacity = 0.28,
-                tooltip = "area_label",
-                before_id = "waterway_line_label"
-            ) %>%
-            mapgl::add_line_layer(
-                id = "obs-area-line",
-                source = selected_shape,
-                line_color = "#f59e0b",
-                line_width = 3,
-                line_opacity = 0.95,
-                before_id = "waterway_line_label"
-            )
+            dplyr::select(area_label)
+    } else {
+        NULL
     }
+
+    observational_maplibre_draw_area_layers(
+        proxy = mapgl::maplibre_proxy("map_obs"),
+        danube_shape = dun,
+        selected_shape = selected_shape
+    )
 })
 
 observe({
@@ -344,39 +116,16 @@ observe({
 
     obs_style_change_trigger()
     stations_in_box <- stations_data()
-    proxy <- mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::clear_layer("stations")
-
-    if (!is.null(stations_in_box) && nrow(stations_in_box) > 0) {
-        stations_map <- stations_in_box %>%
-            dplyr::mutate(
-                StationID = as.character(StationID),
-                station_label = vapply(
-                    seq_len(nrow(stations_in_box)),
-                    function(i) build_obs_station_label(stations_in_box[i, ]),
-                    character(1)
-                )
-            )
-
-        proxy <- proxy %>%
-            mapgl::add_circle_layer(
-                id = "stations",
-                source = stations_map,
-                circle_color = "#2563eb",
-                circle_radius = 5,
-                circle_stroke_color = "#1e3a8a",
-                circle_stroke_width = 1,
-                circle_opacity = 0.85,
-                tooltip = "station_label",
-                before_id = "waterway_line_label"
-            )
-    }
+    proxy <- observational_maplibre_draw_station_layers(
+        proxy = mapgl::maplibre_proxy("map_obs"),
+        stations_in_box = stations_in_box
+    )
 
     selected_id <- isolate(selected_station_obs_id())
     if (!is.null(selected_id) && !is.null(stations_in_box)) {
         selected_station <- stations_in_box[as.character(stations_in_box$StationID) == as.character(selected_id), ]
         if (nrow(selected_station) > 0) {
-            highlight_selected_obs_station(proxy, selected_station, move_map = FALSE)
+            observational_maplibre_highlight_station(proxy, selected_station, move_map = FALSE)
         } else {
             proxy %>% mapgl::clear_layer("selected-highlight")
         }
@@ -450,7 +199,7 @@ observeEvent(input$map_obs_feature_click, {
 
         selected_station_obs_id(station_id)
         if (nrow(meta) > 0) {
-            highlight_selected_obs_station(mapgl::maplibre_proxy("map_obs"), meta)
+            observational_maplibre_highlight_station(mapgl::maplibre_proxy("map_obs"), meta)
         }
 
         # Initialize fetch state
@@ -789,11 +538,24 @@ observeEvent(input$test_area_obs, {
 
     req(obs_map_initialized())
 
-    shape_to_zoom <- get_obs_shape(input$test_area_obs)
+    shape_to_zoom <- maplibre_get_area_shape(
+        input$test_area_obs,
+        dun,
+        is1_austria,
+        is2_slovakia,
+        is3_serbia,
+        is4_romania,
+        ms1_germany,
+        ms2_slovakia,
+        ms3_serbia,
+        ms4_romania,
+        ms5_romania,
+        ms6_romania
+    )
 
     mapgl::maplibre_proxy("map_obs") %>%
         mapgl::fit_bounds(
-            get_obs_bbox(shape_to_zoom),
+            maplibre_get_bbox(shape_to_zoom),
             animate = TRUE
         )
 })

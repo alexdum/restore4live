@@ -39,6 +39,9 @@ source("utils/graph_title_climate.R", local = T) # titlu grafic scenarii climati
 source("utils/get_stations_dwd.R", local = T)
 source("utils/parse_weather_dwd.R", local = T)
 source("utils/plot_climat_obs_data.R", local = T)
+source("utils/maplibre_common.R", local = T)
+source("utils/maplibre_climate_scenario.R", local = T)
+source("utils/maplibre_climate_observational.R", local = T)
 
 files_cmip6 <- list.files("www/data/ncs/cmip6", full.names = T, recursive = T)
 files_rdis <- list.files("www/data/ncs/rdis", full.names = T, recursive = T)

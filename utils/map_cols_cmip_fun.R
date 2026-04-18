@@ -159,5 +159,12 @@ map_cols_cmip_fun <- function(indic = NA, type = NA, domain = NA) {
   pal <- colorBin(cols, domain = domain, bins = bins, na.color = "transparent")
   pal2 <- colorBin(cols, domain = domain, bins = bins, reverse = T, na.color = "transparent")
 
-  return(list(pal = pal, pal_rev = pal2, tit_leg = leaflet_titleg, minmax = range(df.col$vals)))
+  return(list(
+    pal = pal,
+    pal_rev = pal2,
+    tit_leg = leaflet_titleg,
+    minmax = range(df.col$vals),
+    cols = cols,
+    bins = bins
+  ))
 }

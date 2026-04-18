@@ -1,7 +1,13 @@
 climate_scenario_sidebar <- list(
     selectInput(
     inputId = "test_area",
-    label = "Area of interest",
+    label = span(
+      "Area of interest",
+      tooltip(
+        bs_icon("info-circle"),
+        "Use this control to choose the spatial context for analysis. Selecting Danube River Basin keeps the chart in point mode, so map clicks return a point series; selecting a specific test area zooms to that polygon and switches the chart to an area-average series for that area."
+      )
+    ),
     choices = select_area,
     selected = "drb"),
   selectInput(
@@ -111,25 +117,94 @@ climate_scenario_sidebar <- list(
 
 
 climate_scenario <-
-  
-  layout_sidebar(
-    sidebar = sidebar(
-      climate_scenario_sidebar
-    ),
-    layout_columns(
-      col_widths = breakpoints(sm = 12, md = 6, lg = 6, xl = 6),
-      # width = 1/2,
-      # heights_equal = "row",
-      # Show results
-      card(
-        card_header(textOutput("map_titl")),
-        full_screen = T,
-        leafletOutput("map", height = "60vh")
+  div(
+    class = "climate-scenario-page",
+    layout_sidebar(
+      sidebar = sidebar(
+        climate_scenario_sidebar
       ),
-      card(
-        card_header(textOutput("graph_titl")),
-        full_screen = T,
-        highchartOutput("chart_scen", height = "60vh")
+      div(
+        class = "climate-scenario-main",
+        div(
+          class = "climate-scenario-shared-title",
+          textOutput("map_titl")
+        ),
+        div(
+          class = "climate-scenario-layout",
+          div(
+            class = "climate-scenario-map-slot",
+            card(
+              class = "climate-scenario-map-card",
+              full_screen = T,
+              div(
+                class = "climate-scenario-map-panel",
+                mapgl::maplibreOutput("map", height = "100%"),
+                absolutePanel(
+                  top = 130,
+                  left = 10,
+                  class = "map-layer-control",
+                  style = "z-index: 1000;",
+                  div(class = "control-icon", icon("layer-group")),
+                  div(
+                    class = "control-content",
+                    radioButtons(
+                      inputId = "basemap_scen",
+                      label = "Basemap",
+                      choices = c(
+                        "OpenFreeMap Positron" = "ofm_positron",
+                        "OpenFreeMap Bright" = "ofm_bright",
+                        "Satellite (Sentinel-2)" = "sentinel"
+                      ),
+                      selected = "ofm_positron"
+                    ),
+                    hr(style = "margin: 8px 0;"),
+                    checkboxInput(
+                      inputId = "show_labels_scen",
+                      label = "Show Labels",
+                      value = TRUE
+                    )
+                  )
+                ),
+                absolutePanel(
+                  id = "zoom_home_scen_panel",
+                  top = 80,
+                  left = 10,
+                  style = "z-index: 1000;",
+                  actionButton(
+                    "zoom_home_scen",
+                    bsicons::bs_icon("house-fill"),
+                    class = "btn-home",
+                    title = "Zoom to Danube basin"
+                  )
+                )
+              )
+            )
+          ),
+          div(
+            class = "climate-scenario-side-column",
+            div(
+              class = "climate-scenario-plot-slot",
+              card(
+                class = "climate-scenario-plot-card",
+                full_screen = T,
+                div(
+                  class = "climate-scenario-chart-panel",
+                  highchartOutput("chart_scen", height = "100%")
+                )
+              )
+            ),
+            div(
+              class = "climate-scenario-stats-slot",
+              card(
+                class = "climate-scenario-stats-card",
+                div(
+                  class = "climate-scenario-info-panel",
+                  uiOutput("scenario_context_panel")
+                )
+              )
+            )
+          )
+        )
       )
     )
   )
