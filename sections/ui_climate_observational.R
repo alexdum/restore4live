@@ -44,7 +44,7 @@ climate_observational <-
                     full_screen = TRUE,
                     card_header(
                         div(
-                            style = "display: flex; justify-content: space-between; align_items: center;",
+                            class = "d-flex justify-content-between align-items-center w-100",
                             uiOutput("obs_station_meta"),
                             downloadButton("download_obs_data", "Download CSV", class = "btn-sm btn-primary")
                         )
