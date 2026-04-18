@@ -14,6 +14,13 @@ library(shinyjs)
 library(plotly)
 
 
+# OpenFreeMap / Sentinel basemap styles for MapLibre-based views
+ofm_positron_style <- "https://tiles.openfreemap.org/styles/positron"
+ofm_bright_style <- "https://tiles.openfreemap.org/styles/bright"
+sentinel_url <- "https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2023_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg"
+sentinel_attribution <- '<a href="https://s2maps.eu" target="_blank">Sentinel-2 cloudless - by EOX IT Services GmbH</a> (Contains modified Copernicus Sentinel data 2023)'
+
+
 
 # reticulate::py_install(c("dask['complete']"))
 # reticulate::py_install(c("requests", "aiohttp"))

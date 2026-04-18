@@ -102,6 +102,65 @@ body.ui-frozen .navbar {
   cursor: pointer;
 }
 
+.map-layer-control {
+  background: white;
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+  width: 36px;
+  height: 36px;
+  overflow: hidden;
+  transition: width 0.3s ease, height 0.3s ease;
+  cursor: pointer;
+}
+
+.map-layer-control:hover,
+.map-layer-control.expanded {
+  width: 220px;
+  height: auto;
+}
+
+.map-layer-control .control-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+}
+
+.map-layer-control .control-content {
+  display: none;
+  margin-top: 10px;
+  min-width: 200px;
+}
+
+.map-layer-control:hover .control-content,
+.map-layer-control.expanded .control-content {
+  display: block;
+}
+
+#zoom_home_obs_panel {
+  z-index: 999 !important;
+}
+
+.btn-home {
+  background: white;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  color: #444;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-home:hover {
+  background: #f4f4f4;
+  color: #000;
+}
+
 /* Fallback: Hide the first nav item (Home) if other selectors fail */
 .navbar-nav>.nav-item:first-child {
   display: none !important;
