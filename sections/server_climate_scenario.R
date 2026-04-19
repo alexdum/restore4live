@@ -27,20 +27,19 @@ scen_all_areas <- maplibre_build_all_areas(country_layers)
 
 # functie harta de start
 output$map <- mapgl::renderMaplibre({
-  mapgl::maplibre(
-    style = ofm_positron_style,
-    center = c(19, 46),
-    zoom = 5
-  ) %>%
-    mapgl::add_navigation_control(show_compass = FALSE, visualize_pitch = FALSE, position = "top-left")
+  maplibre_create_base_map()
 })
 
 observe({
   req(!scen_map_initialized())
   req(input$map_zoom)
 
-  mapgl::maplibre_proxy("map") %>%
-    mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = FALSE)
+  maplibre_fit_shape(
+    proxy = mapgl::maplibre_proxy("map"),
+    shape = dun,
+    animate = FALSE,
+    buffer_m = 0
+  )
 
   scen_map_initialized(TRUE)
 })
@@ -54,8 +53,12 @@ observeEvent(input$navbar, {
 observeEvent(input$zoom_home_scen, {
   req(scen_map_initialized())
 
-  mapgl::maplibre_proxy("map") %>%
-    mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = TRUE)
+  maplibre_fit_shape(
+    proxy = mapgl::maplibre_proxy("map"),
+    shape = dun,
+    animate = TRUE,
+    buffer_m = 0
+  )
 })
 
 observeEvent(input$basemap_scen, {
@@ -170,11 +173,11 @@ observeEvent(input$test_area, {
 
   req(scen_map_initialized())
 
-  mapgl::maplibre_proxy("map") %>%
-    mapgl::fit_bounds(
-      maplibre_get_bbox(shape_to_zoom),
-      animate = TRUE
-    )
+  maplibre_fit_shape(
+    proxy = mapgl::maplibre_proxy("map"),
+    shape = shape_to_zoom,
+    animate = TRUE
+  )
 })
 
 

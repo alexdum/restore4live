@@ -37,6 +37,25 @@ maplibre_non_label_layer_ids <- c(
   "highway_motorway_bridge_casing", "highway_motorway_bridge_inner"
 )
 
+maplibre_create_base_map <- function(
+    style = ofm_positron_style,
+    center = c(19, 46),
+    zoom = 5,
+    navigation_position = "top-left",
+    show_compass = FALSE,
+    visualize_pitch = FALSE) {
+  mapgl::maplibre(
+    style = style,
+    center = center,
+    zoom = zoom
+  ) %>%
+    mapgl::add_navigation_control(
+      show_compass = show_compass,
+      visualize_pitch = visualize_pitch,
+      position = navigation_position
+    )
+}
+
 maplibre_resize_script <- function(map_dom_id, delay_ms = 200) {
   sprintf(
     "
@@ -104,12 +123,61 @@ maplibre_get_bbox <- function(shape, buffer_m = 10000) {
   unname(c(bbox[["xmin"]], bbox[["ymin"]], bbox[["xmax"]], bbox[["ymax"]]))
 }
 
+maplibre_fit_shape <- function(proxy, shape, animate = TRUE, buffer_m = 10000) {
+  proxy %>%
+    mapgl::fit_bounds(
+      maplibre_get_bbox(shape, buffer_m = buffer_m),
+      animate = animate
+    )
+}
+
 maplibre_build_all_areas <- function(country_layers) {
   dplyr::bind_rows(lapply(country_layers, function(layer_info) {
     sf::st_as_sf(layer_info$data) %>%
       dplyr::mutate(area_label = layer_info$name) %>%
       dplyr::select(area_label)
   }))
+}
+
+maplibre_add_polygon_layers <- function(
+    proxy,
+    fill_id,
+    line_id,
+    source,
+    fill_color,
+    fill_opacity,
+    line_color,
+    line_width,
+    line_opacity,
+    tooltip = NULL,
+    before_id = "waterway_line_label") {
+  fill_args <- list(
+    proxy,
+    id = fill_id,
+    source = source,
+    fill_color = fill_color,
+    fill_opacity = fill_opacity,
+    before_id = before_id
+  )
+
+  if (!is.null(tooltip)) {
+    fill_args$tooltip <- tooltip
+  }
+
+  proxy <- do.call(mapgl::add_fill_layer, fill_args)
+
+  do.call(
+    mapgl::add_line_layer,
+    list(
+      proxy,
+      id = line_id,
+      source = source,
+      line_color = line_color,
+      line_width = line_width,
+      line_opacity = line_opacity,
+      before_id = before_id
+    )
+  )
 }
 
 maplibre_apply_label_visibility <- function(proxy, show_labels, label_layer_ids = maplibre_label_layer_ids) {

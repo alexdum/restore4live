@@ -65,41 +65,35 @@ observational_maplibre_draw_area_layers <- function(
     selected_shape = NULL,
     before_id = "waterway_line_label") {
   proxy <- proxy %>%
-    mapgl::clear_layer(observational_maplibre_overlay_layer_ids) %>%
-    mapgl::add_fill_layer(
-      id = "obs-danube-fill",
-      source = danube_shape,
-      fill_color = "#1d4ed8",
-      fill_opacity = 0.025,
-      before_id = before_id
-    ) %>%
-    mapgl::add_line_layer(
-      id = "obs-danube-line",
-      source = danube_shape,
-      line_color = "#0f172a",
-      line_width = 1.2,
-      line_opacity = 0.8,
-      before_id = before_id
-    )
+    mapgl::clear_layer(observational_maplibre_overlay_layer_ids)
+
+  proxy <- maplibre_add_polygon_layers(
+    proxy = proxy,
+    fill_id = "obs-danube-fill",
+    line_id = "obs-danube-line",
+    source = danube_shape,
+    fill_color = "#1d4ed8",
+    fill_opacity = 0.025,
+    line_color = "#0f172a",
+    line_width = 1.2,
+    line_opacity = 0.8,
+    before_id = before_id
+  )
 
   if (!is.null(selected_shape)) {
-    proxy <- proxy %>%
-      mapgl::add_fill_layer(
-        id = "obs-area-fill",
-        source = selected_shape,
-        fill_color = "#facc15",
-        fill_opacity = 0.28,
-        tooltip = "area_label",
-        before_id = before_id
-      ) %>%
-      mapgl::add_line_layer(
-        id = "obs-area-line",
-        source = selected_shape,
-        line_color = "#f59e0b",
-        line_width = 3,
-        line_opacity = 0.95,
-        before_id = before_id
-      )
+    proxy <- maplibre_add_polygon_layers(
+      proxy = proxy,
+      fill_id = "obs-area-fill",
+      line_id = "obs-area-line",
+      source = selected_shape,
+      fill_color = "#facc15",
+      fill_opacity = 0.28,
+      line_color = "#f59e0b",
+      line_width = 3,
+      line_opacity = 0.95,
+      tooltip = "area_label",
+      before_id = before_id
+    )
   }
 
   proxy

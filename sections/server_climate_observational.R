@@ -22,20 +22,19 @@ observeEvent(input$obs_tab, {
 
 # Render the initial map
 output$map_obs <- mapgl::renderMaplibre({
-    mapgl::maplibre(
-        style = ofm_positron_style,
-        center = c(19, 46),
-        zoom = 5
-    ) %>%
-        mapgl::add_navigation_control(show_compass = FALSE, visualize_pitch = FALSE, position = "top-left")
+    maplibre_create_base_map()
 })
 
 observe({
     req(!obs_map_initialized())
     req(input$map_obs_zoom)
 
-    mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = FALSE)
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("map_obs"),
+        shape = dun,
+        animate = FALSE,
+        buffer_m = 0
+    )
 
     obs_map_initialized(TRUE)
 })
@@ -43,8 +42,12 @@ observe({
 observeEvent(input$zoom_home_obs, {
     req(obs_map_initialized())
 
-    mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::fit_bounds(maplibre_get_bbox(dun, buffer_m = 0), animate = TRUE)
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("map_obs"),
+        shape = dun,
+        animate = TRUE,
+        buffer_m = 0
+    )
 })
 
 observeEvent(input$basemap_obs, {
@@ -553,11 +556,11 @@ observeEvent(input$test_area_obs, {
         ms6_romania
     )
 
-    mapgl::maplibre_proxy("map_obs") %>%
-        mapgl::fit_bounds(
-            maplibre_get_bbox(shape_to_zoom),
-            animate = TRUE
-        )
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("map_obs"),
+        shape = shape_to_zoom,
+        animate = TRUE
+    )
 })
 
 output$map_titl_obs <- renderText({
