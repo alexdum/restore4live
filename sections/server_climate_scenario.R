@@ -349,7 +349,7 @@ output$scenario_context_panel <- renderUI({
     "Waiting for data"
   }
   tip_text <- if (is_zonal) {
-    "Select the basin to return to point-based inspection on the map."
+    "Select the Danube basin to return to point-based inspection on the map."
   } else {
     "Click another map location to update the series for a new point."
   }
