@@ -150,6 +150,7 @@ hydro_non_label_layer_ids <- maplibre_non_label_layer_ids
 hydro_boundary_layer_ids <- maplibre_boundary_layer_ids
 hydro_vector_layer_ids <- hydro_maplibre_vector_layer_ids
 hydro_all_areas <- maplibre_build_all_areas(country_layers)
+hydro_point_selected <- reactiveVal(FALSE)
 
 # Initial hydrological scenario map
 output$hydro_map <- mapgl::renderMaplibre({
@@ -252,6 +253,16 @@ observe({
         selected_shape = selected_shape
     )
 
+    if (identical(input$hydro_area, "drb") && isTRUE(hydro_point_selected())) {
+        proxy <- hydro_maplibre_highlight_point(
+            proxy = proxy,
+            lon = hydro_values_plot$lon,
+            lat = hydro_values_plot$lat
+        )
+    } else {
+        proxy <- proxy %>% mapgl::clear_layer("hydro-selected-point")
+    }
+
     proxy %>%
         maplibre_place_layer_below_anchors("hydro-raster", c(hydro_boundary_layer_ids, hydro_vector_layer_ids, hydro_label_layer_ids)) %>%
         maplibre_bring_layers_to_front(hydro_vector_layer_ids) %>%
@@ -345,6 +356,7 @@ observeEvent(input$hydro_map_click, {
         hydro_values_plot$mode <- "point"
         hydro_values_plot$lon <- input$hydro_map_click$lng
         hydro_values_plot$lat <- input$hydro_map_click$lat
+        hydro_point_selected(TRUE)
     }
 })
 

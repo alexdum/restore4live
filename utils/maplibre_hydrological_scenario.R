@@ -1,7 +1,8 @@
 hydro_maplibre_vector_layer_ids <- c(
   "hydro-danube-fill", "hydro-danube-line",
   "hydro-aoi-fill", "hydro-aoi-line",
-  "hydro-selected-fill", "hydro-selected-line"
+  "hydro-selected-fill", "hydro-selected-line",
+  "hydro-selected-point"
 )
 
 hydro_maplibre_top_line_layer_ids <- c(
@@ -81,6 +82,20 @@ hydro_maplibre_update_raster <- function(
     layer_id = layer_id,
     legend_id = legend_id,
     legend_separator = "-",
+    before_id = before_id
+  )
+}
+
+hydro_maplibre_highlight_point <- function(
+    proxy,
+    lon,
+    lat,
+    before_id = "waterway_line_label") {
+  maplibre_highlight_point(
+    proxy = proxy,
+    layer_id = "hydro-selected-point",
+    lon = lon,
+    lat = lat,
     before_id = before_id
   )
 }

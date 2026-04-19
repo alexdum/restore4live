@@ -29,27 +29,13 @@ rs_maplibre_highlight_point <- function(
     lon,
     lat,
     before_id = "waterway_line_label") {
-  point_data <- sf::st_as_sf(
-    data.frame(
-      lon = lon,
-      lat = lat
-    ),
-    coords = c("lon", "lat"),
-    crs = 4326
+  maplibre_highlight_point(
+    proxy = proxy,
+    layer_id = "rs-selected-point",
+    lon = lon,
+    lat = lat,
+    before_id = before_id
   )
-
-  proxy %>%
-    mapgl::clear_layer("rs-selected-point") %>%
-    mapgl::add_circle_layer(
-      id = "rs-selected-point",
-      source = point_data,
-      circle_color = "#dc2626",
-      circle_radius = 7,
-      circle_stroke_color = "#ffffff",
-      circle_stroke_width = 2,
-      circle_opacity = 0.95,
-      before_id = before_id
-    )
 }
 
 rs_maplibre_build_palette <- function(raster, legend_title, n_bins = 10) {

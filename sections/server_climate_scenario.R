@@ -23,6 +23,7 @@ scen_non_label_layer_ids <- maplibre_non_label_layer_ids
 scen_boundary_layer_ids <- maplibre_boundary_layer_ids
 scen_vector_layer_ids <- scenario_maplibre_vector_layer_ids
 scen_all_areas <- maplibre_build_all_areas(country_layers)
+scen_point_selected <- reactiveVal(FALSE)
 
 
 # functie harta de start
@@ -122,6 +123,16 @@ observe({
     selected_shape = selected_shape
   )
 
+  if (identical(input$test_area, "drb") && isTRUE(scen_point_selected())) {
+    proxy <- scenario_maplibre_highlight_point(
+      proxy = proxy,
+      lon = values_plot_na$lon,
+      lat = values_plot_na$lat
+    )
+  } else {
+    proxy <- proxy %>% mapgl::clear_layer("scen-selected-point")
+  }
+
   proxy %>%
     maplibre_place_layer_below_anchors("scenario-raster", c(scen_boundary_layer_ids, scen_vector_layer_ids, scen_label_layer_ids)) %>%
     maplibre_bring_layers_to_front(scen_vector_layer_ids) %>%
@@ -210,6 +221,7 @@ observeEvent(input$map_click, {
     values_plot_na$mode <- "point"
     values_plot_na$lon <- input$map_click$lng
     values_plot_na$lat <- input$map_click$lat
+    scen_point_selected(TRUE)
   }
 })
 

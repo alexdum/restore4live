@@ -180,6 +180,40 @@ maplibre_add_polygon_layers <- function(
   )
 }
 
+maplibre_highlight_point <- function(
+    proxy,
+    layer_id,
+    lon,
+    lat,
+    before_id = "waterway_line_label",
+    circle_color = "#dc2626",
+    circle_radius = 7,
+    circle_stroke_color = "#ffffff",
+    circle_stroke_width = 2,
+    circle_opacity = 0.95) {
+  point_data <- sf::st_as_sf(
+    data.frame(
+      lon = lon,
+      lat = lat
+    ),
+    coords = c("lon", "lat"),
+    crs = 4326
+  )
+
+  proxy %>%
+    mapgl::clear_layer(layer_id) %>%
+    mapgl::add_circle_layer(
+      id = layer_id,
+      source = point_data,
+      circle_color = circle_color,
+      circle_radius = circle_radius,
+      circle_stroke_color = circle_stroke_color,
+      circle_stroke_width = circle_stroke_width,
+      circle_opacity = circle_opacity,
+      before_id = before_id
+    )
+}
+
 maplibre_format_legend_value <- function(x) {
   if (is.na(x)) {
     return("NA")

@@ -1,7 +1,8 @@
 scenario_maplibre_vector_layer_ids <- c(
   "scen-danube-fill", "scen-danube-line",
   "scen-aoi-fill", "scen-aoi-line",
-  "scen-selected-fill", "scen-selected-line"
+  "scen-selected-fill", "scen-selected-line",
+  "scen-selected-point"
 )
 
 scenario_maplibre_top_line_layer_ids <- c(
@@ -80,6 +81,20 @@ scenario_maplibre_update_raster <- function(
     opacity = opacity,
     layer_id = layer_id,
     legend_id = legend_id,
+    before_id = before_id
+  )
+}
+
+scenario_maplibre_highlight_point <- function(
+    proxy,
+    lon,
+    lat,
+    before_id = "waterway_line_label") {
+  maplibre_highlight_point(
+    proxy = proxy,
+    layer_id = "scen-selected-point",
+    lon = lon,
+    lat = lat,
     before_id = before_id
   )
 }
