@@ -1,28 +1,28 @@
-scenario_maplibre_vector_layer_ids <- c(
-  "scen-danube-fill", "scen-danube-line",
-  "scen-aoi-fill", "scen-aoi-line",
-  "scen-selected-fill", "scen-selected-line"
+hydro_maplibre_vector_layer_ids <- c(
+  "hydro-danube-fill", "hydro-danube-line",
+  "hydro-aoi-fill", "hydro-aoi-line",
+  "hydro-selected-fill", "hydro-selected-line"
 )
 
-scenario_maplibre_top_line_layer_ids <- c(
-  "scen-danube-line",
-  "scen-aoi-line",
-  "scen-selected-line"
+hydro_maplibre_top_line_layer_ids <- c(
+  "hydro-danube-line",
+  "hydro-aoi-line",
+  "hydro-selected-line"
 )
 
-scenario_maplibre_draw_area_layers <- function(
+hydro_maplibre_draw_area_layers <- function(
     proxy,
     danube_shape,
     all_areas,
     selected_shape = NULL,
     before_id = "waterway_line_label") {
   proxy <- proxy %>%
-    mapgl::clear_layer(scenario_maplibre_vector_layer_ids)
+    mapgl::clear_layer(hydro_maplibre_vector_layer_ids)
 
   proxy <- maplibre_add_polygon_layers(
     proxy = proxy,
-    fill_id = "scen-danube-fill",
-    line_id = "scen-danube-line",
+    fill_id = "hydro-danube-fill",
+    line_id = "hydro-danube-line",
     source = danube_shape,
     fill_color = "#1d4ed8",
     fill_opacity = 0.02,
@@ -34,8 +34,8 @@ scenario_maplibre_draw_area_layers <- function(
 
   proxy <- maplibre_add_polygon_layers(
     proxy = proxy,
-    fill_id = "scen-aoi-fill",
-    line_id = "scen-aoi-line",
+    fill_id = "hydro-aoi-fill",
+    line_id = "hydro-aoi-line",
     source = all_areas,
     fill_color = "#ef4444",
     fill_opacity = 0.08,
@@ -49,8 +49,8 @@ scenario_maplibre_draw_area_layers <- function(
   if (!is.null(selected_shape)) {
     proxy <- maplibre_add_polygon_layers(
       proxy = proxy,
-      fill_id = "scen-selected-fill",
-      line_id = "scen-selected-line",
+      fill_id = "hydro-selected-fill",
+      line_id = "hydro-selected-line",
       source = selected_shape,
       fill_color = "#facc15",
       fill_opacity = 0.26,
@@ -65,13 +65,13 @@ scenario_maplibre_draw_area_layers <- function(
   proxy
 }
 
-scenario_maplibre_update_raster <- function(
+hydro_maplibre_update_raster <- function(
     proxy,
     raster,
     palette,
     opacity,
-    layer_id = "scenario-raster",
-    legend_id = "scenario-raster-legend",
+    layer_id = "hydro-raster",
+    legend_id = "hydro-raster-legend",
     before_id = "waterway_line_label") {
   maplibre_update_categorical_raster(
     proxy = proxy,
@@ -80,6 +80,7 @@ scenario_maplibre_update_raster <- function(
     opacity = opacity,
     layer_id = layer_id,
     legend_id = legend_id,
+    legend_separator = "-",
     before_id = before_id
   )
 }

@@ -42,6 +42,7 @@ source("utils/plot_climat_obs_data.R", local = T)
 source("utils/maplibre_common.R", local = T)
 source("utils/maplibre_climate_scenario.R", local = T)
 source("utils/maplibre_climate_observational.R", local = T)
+source("utils/maplibre_hydrological_scenario.R", local = T)
 
 files_cmip6 <- list.files("www/data/ncs/cmip6", full.names = T, recursive = T)
 files_rdis <- list.files("www/data/ncs/rdis", full.names = T, recursive = T)

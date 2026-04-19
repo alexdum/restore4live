@@ -180,6 +180,110 @@ maplibre_add_polygon_layers <- function(
   )
 }
 
+maplibre_format_legend_value <- function(x) {
+  if (is.na(x)) {
+    return("NA")
+  }
+
+  rounded <- if (abs(x) >= 100 || abs(x - round(x)) < 1e-8) {
+    round(x, 0)
+  } else if (abs(x) >= 10) {
+    round(x, 1)
+  } else {
+    round(x, 2)
+  }
+
+  format(rounded, trim = TRUE, scientific = FALSE)
+}
+
+maplibre_build_interval_legend <- function(bins, colors, separator = " - ") {
+  stopifnot(length(bins) == length(colors) + 1)
+
+  labels <- vapply(seq_along(colors), function(i) {
+    paste0(
+      maplibre_format_legend_value(bins[i]),
+      separator,
+      maplibre_format_legend_value(bins[i + 1])
+    )
+  }, character(1))
+
+  ord <- rev(seq_along(colors))
+  list(
+    labels = labels[ord],
+    colors = colors[ord]
+  )
+}
+
+maplibre_classify_raster <- function(r, bins) {
+  terra::app(
+    r,
+    fun = function(x) {
+      as.integer(cut(
+        x,
+        breaks = bins,
+        labels = FALSE,
+        include.lowest = TRUE,
+        right = FALSE
+      ))
+    }
+  )
+}
+
+maplibre_build_classified_raster <- function(r, bins, colors) {
+  class_raster <- maplibre_classify_raster(r, bins)
+  rgba <- grDevices::col2rgb(colors, alpha = TRUE)
+
+  terra::coltab(class_raster) <- data.frame(
+    value = seq_along(colors),
+    red = as.integer(rgba["red", ]),
+    green = as.integer(rgba["green", ]),
+    blue = as.integer(rgba["blue", ]),
+    alpha = as.integer(rgba["alpha", ])
+  )
+
+  class_raster
+}
+
+maplibre_update_categorical_raster <- function(
+    proxy,
+    raster,
+    palette,
+    opacity,
+    layer_id,
+    legend_id,
+    legend_separator = " - ",
+    before_id = "waterway_line_label") {
+  legend_title <- trimws(gsub("<[^>]+>", "", palette$tit_leg))
+  legend_items <- maplibre_build_interval_legend(
+    bins = palette$bins,
+    colors = palette$cols,
+    separator = legend_separator
+  )
+  classified_raster <- maplibre_build_classified_raster(raster, palette$bins, palette$cols)
+
+  proxy %>%
+    mapgl::clear_layer(layer_id) %>%
+    mapgl::clear_legend(legend_id) %>%
+    mapgl::add_image_source(
+      id = layer_id,
+      data = classified_raster
+    ) %>%
+    mapgl::add_raster_layer(
+      id = layer_id,
+      source = layer_id,
+      raster_opacity = opacity,
+      raster_resampling = "nearest",
+      before_id = before_id
+    ) %>%
+    mapgl::add_categorical_legend(
+      legend_title = legend_title,
+      values = legend_items$labels,
+      colors = legend_items$colors,
+      position = "bottom-right",
+      unique_id = legend_id
+    )
+}
+
 maplibre_apply_label_visibility <- function(proxy, show_labels, label_layer_ids = maplibre_label_layer_ids) {
   visibility <- if (isTRUE(show_labels)) "visible" else "none"
 

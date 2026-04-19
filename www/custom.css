@@ -377,7 +377,8 @@ body.ui-frozen .navbar {
   }
 }
 
-#scenario-raster-legend {
+#scenario-raster-legend,
+#hydro-raster-legend {
   left: auto !important;
   right: 12px !important;
   bottom: 12px !important;
@@ -389,19 +390,22 @@ body.ui-frozen .navbar {
   white-space: normal;
 }
 
-#scenario-raster-legend h2 {
+#scenario-raster-legend h2,
+#hydro-raster-legend h2 {
   width: auto;
   text-align: left;
   margin-bottom: 8px !important;
   margin-right: 0 !important;
 }
 
-#scenario-raster-legend .legend-item {
+#scenario-raster-legend .legend-item,
+#hydro-raster-legend .legend-item {
   margin: 0 !important;
   padding: 0 !important;
 }
 
-#scenario-raster-legend .legend-text {
+#scenario-raster-legend .legend-text,
+#hydro-raster-legend .legend-text {
   white-space: normal;
   line-height: 1;
 }

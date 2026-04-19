@@ -141,124 +141,188 @@ data_hydro_sel <- reactive({
     )
 })
 
+# MapLibre state for hydrological scenario map
+hydro_style_change_trigger <- reactiveVal(0)
+hydro_map_initialized <- reactiveVal(FALSE)
+hydro_current_raster_layers <- reactiveVal(character(0))
+hydro_label_layer_ids <- maplibre_label_layer_ids
+hydro_non_label_layer_ids <- maplibre_non_label_layer_ids
+hydro_boundary_layer_ids <- maplibre_boundary_layer_ids
+hydro_vector_layer_ids <- hydro_maplibre_vector_layer_ids
+hydro_all_areas <- maplibre_build_all_areas(country_layers)
 
-# functii leaflet de start
-output$hydro_map <- renderLeaflet({
-    leaflet_fun()
+# Initial hydrological scenario map
+output$hydro_map <- mapgl::renderMaplibre({
+    maplibre_create_base_map()
 })
 
-# update leaflet outputuri
 observe({
-    r <- data_hydro_sel()$r
-    pal <- data_hydro_sel()$pal
-    min_max <- data_hydro_sel()$min_max
-    opacy <- data_hydro_sel()$opacy
+    req(!hydro_map_initialized())
+    req(input$hydro_map_zoom)
 
-    leafletProxy("hydro_map") |>
-        clearImages() |>
-        addRasterImage(r, opacity = opacy, color = pal$pal) |>
-        clearControls() |>
-        addLegend(
-            title = pal$tit_leg,
-            position = "bottomright",
-            opacity = opacy,
-            pal = pal$pal_rev, values = min_max,
-            labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE))
-        )
-})
-
-# Also trigger map update when map bounds become available (handles initial render on tab switch)
-observeEvent(input$hydro_map_bounds,
-    {
-        req(data_hydro_sel())
-        r <- data_hydro_sel()$r
-        pal <- data_hydro_sel()$pal
-        min_max <- data_hydro_sel()$min_max
-        opacy <- data_hydro_sel()$opacy
-
-        leafletProxy("hydro_map") |>
-            clearImages() |>
-            addRasterImage(r, opacity = opacy, color = pal$pal) |>
-            clearControls() |>
-            addLegend(
-                title = pal$tit_leg,
-                position = "bottomright",
-                opacity = opacy,
-                pal = pal$pal_rev, values = min_max,
-                labFormat = labelFormat(transform = function(x) sort(x, decreasing = TRUE))
-            )
-    },
-    once = TRUE
-)
-
-
-# zoom to selected area
-observeEvent(input$hydro_area, {
-    req(input$hydro_area)
-
-    shape_to_zoom <- switch(input$hydro_area,
-        "drb" = dun,
-        "at1" = is1_austria[1, ],
-        "at2" = is1_austria[2, ],
-        "at3" = is1_austria[3, ],
-        "at4" = is1_austria[4, ],
-        "at5" = is1_austria[5, ],
-        "sk1" = is2_slovakia,
-        "rs1" = is3_serbia,
-        "ro1" = is4_romania,
-        "de1" = ms1_germany,
-        "sk2" = ms2_slovakia,
-        "rs2" = ms3_serbia,
-        "ro2" = ms4_romania,
-        "ro3" = ms5_romania,
-        "ro4" = ms6_romania
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("hydro_map"),
+        shape = dun,
+        animate = FALSE,
+        buffer_m = 0
     )
 
-    bbox <- sf::st_bbox(sf::st_buffer(shape_to_zoom, dist = 10000))
-
-    proxy <- leafletProxy("hydro_map") %>%
-        removeShape(layerId = "highlighted_polygon")
-
-    if (input$hydro_area != "drb") {
-        proxy <- proxy %>%
-            addPolygons(
-                data = shape_to_zoom,
-                layerId = "highlighted_polygon",
-                fillColor = "yellow",
-                fillOpacity = 0.5,
-                color = "orange",
-                weight = 3,
-                stroke = TRUE,
-                label = names(select_area[select_area == input$hydro_area]),
-                labelOptions = labelOptions(
-                    style = list(
-                        "color" = "black",
-                        "font-family" = "Arial",
-                        "font-weight" = "bold",
-                        "font-size" = "12px"
-                    ),
-                    textsize = "12px",
-                    direction = "auto"
-                )
-            )
-    }
-
-    proxy %>%
-        fitBounds(
-            lng1 = bbox[["xmin"]], lat1 = bbox[["ymin"]],
-            lng2 = bbox[["xmax"]], lat2 = bbox[["ymax"]]
-        )
+    hydro_map_initialized(TRUE)
 })
 
+observeEvent(input$navbar, {
+    if (input$navbar == "hydrological_scenario") {
+        shinyjs::runjs(maplibre_resize_script("hydro_map"))
+    }
+})
+
+observeEvent(input$zoom_home_hydro, {
+    req(hydro_map_initialized())
+
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("hydro_map"),
+        shape = dun,
+        animate = TRUE,
+        buffer_m = 0
+    )
+})
+
+observeEvent(input$basemap_hydro, {
+    req(hydro_map_initialized())
+    maplibre_switch_basemap(
+        map_id = "hydro_map",
+        basemap = input$basemap_hydro,
+        current_basemap = function() input$basemap_hydro,
+        show_labels = function() input$show_labels_hydro,
+        current_raster_layers = hydro_current_raster_layers,
+        style_change_trigger = hydro_style_change_trigger,
+        sentinel_ids = function() {
+            list(
+                source_id = "hydro-sentinel",
+                layer_id = "hydro-sentinel"
+            )
+        },
+        label_layer_ids = hydro_label_layer_ids,
+        non_label_layer_ids = hydro_non_label_layer_ids
+    )
+})
+
+observeEvent(input$show_labels_hydro,
+    {
+        req(hydro_map_initialized())
+        maplibre_apply_label_visibility(
+            mapgl::maplibre_proxy("hydro_map"),
+            input$show_labels_hydro,
+            hydro_label_layer_ids
+        )
+    },
+    ignoreInit = TRUE
+)
+
+observe({
+    req(hydro_map_initialized())
+
+    hydro_style_change_trigger()
+    selected_shape <- maplibre_get_area_shape(
+        input$hydro_area,
+        dun,
+        is1_austria,
+        is2_slovakia,
+        is3_serbia,
+        is4_romania,
+        ms1_germany,
+        ms2_slovakia,
+        ms3_serbia,
+        ms4_romania,
+        ms5_romania,
+        ms6_romania
+    )
+    selected_shape <- if (!identical(input$hydro_area, "drb")) {
+        sf::st_as_sf(selected_shape) %>%
+            dplyr::mutate(area_label = maplibre_get_area_label(input$hydro_area, select_area)) %>%
+            dplyr::select(area_label)
+    } else {
+        NULL
+    }
+
+    proxy <- hydro_maplibre_draw_area_layers(
+        proxy = mapgl::maplibre_proxy("hydro_map"),
+        danube_shape = dun,
+        all_areas = hydro_all_areas,
+        selected_shape = selected_shape
+    )
+
+    proxy %>%
+        maplibre_place_layer_below_anchors("hydro-raster", c(hydro_boundary_layer_ids, hydro_vector_layer_ids, hydro_label_layer_ids)) %>%
+        maplibre_bring_layers_to_front(hydro_vector_layer_ids) %>%
+        maplibre_bring_layers_to_front(hydro_maplibre_top_line_layer_ids, before_id = NULL)
+})
+
+observe({
+    req(input$navbar == "hydrological_scenario")
+    req(hydro_map_initialized())
+
+    r <- data_hydro_sel()$r
+    pal <- data_hydro_sel()$pal
+    opacy <- data_hydro_sel()$opacy
+
+    hydro_style_change_trigger()
+
+    hydro_maplibre_update_raster(
+        proxy = mapgl::maplibre_proxy("hydro_map"),
+        raster = r,
+        palette = pal,
+        opacity = opacy
+    ) %>%
+        maplibre_place_layer_below_anchors("hydro-raster", c(hydro_boundary_layer_ids, hydro_vector_layer_ids, hydro_label_layer_ids)) %>%
+        maplibre_bring_layers_to_front(hydro_vector_layer_ids) %>%
+        maplibre_bring_layers_to_front(hydro_maplibre_top_line_layer_ids, before_id = NULL)
+})
+
+observeEvent(input$hydro_area, {
+    req(input$hydro_area)
+    req(hydro_map_initialized())
+
+    shape_to_zoom <- maplibre_get_area_shape(
+        input$hydro_area,
+        dun,
+        is1_austria,
+        is2_slovakia,
+        is3_serbia,
+        is4_romania,
+        ms1_germany,
+        ms2_slovakia,
+        ms3_serbia,
+        ms4_romania,
+        ms5_romania,
+        ms6_romania
+    )
+
+    maplibre_fit_shape(
+        proxy = mapgl::maplibre_proxy("hydro_map"),
+        shape = shape_to_zoom,
+        animate = TRUE
+    )
+})
+
+hydro_scenario_label <- function(scen) {
+    dplyr::recode(
+        scen,
+        "rcp_2_6" = "RCP2.6",
+        "rcp_4_5" = "RCP4.5",
+        "rcp_8_5" = "RCP8.5",
+        .default = scen
+    )
+}
 
 output$hydro_map_titl <- renderText({
     req(data_hydro_sel())
     param <- data_hydro_sel()$param_name
     season <- data_hydro_sel()$season_name
     if (input$hydro_quant %in% "climate") {
-        paste(param, season, toupper(input$hydro_scen), " - multiannual mean", input$hydro_period_climate)
+        paste(param, season, hydro_scenario_label(input$hydro_scen), " - multiannual mean", input$hydro_period_climate)
     } else {
-        paste(param, season, toupper(input$hydro_scen), " - change in multiannual mean", input$hydro_period_change[2], "vs.", input$hydro_period_change[1])
+        paste(param, season, hydro_scenario_label(input$hydro_scen), " - change in multiannual mean", input$hydro_period_change[2], "vs.", input$hydro_period_change[1])
     }
 })
 
@@ -453,7 +517,130 @@ output$hydro_chart_scen <- renderHighchart({
     create_timeseries_chart(
         data_input = hydro_values_plot$input,
         param = input$hydro_param,
-        params_def = params_def
+        params_def = params_def,
+        use_percentile_axis = TRUE,
+        percentile_axis_padding = 0.01,
+        hide_hover_markers = TRUE
+    )
+})
+
+output$hydro_context_panel <- renderUI({
+    req(input$hydro_param, input$hydro_scen, input$hydro_quant)
+
+    area_label <- maplibre_get_area_label(input$hydro_area, select_area)
+    is_zonal <- identical(hydro_values_plot$mode, "zonal")
+    metric_label <- if (identical(input$hydro_quant, "climate")) {
+        "Climatology"
+    } else {
+        "Change vs baseline"
+    }
+    period_label <- if (identical(input$hydro_quant, "climate")) {
+        input$hydro_period_climate
+    } else {
+        paste(input$hydro_period_change[2], "vs.", input$hydro_period_change[1])
+    }
+    selection_value <- if (is_zonal) {
+        area_label
+    } else {
+        sprintf("%.3f°E, %.3f°N", hydro_values_plot$lon, hydro_values_plot$lat)
+    }
+    point_in_area <- if (!is_zonal) {
+        selected_shape <- maplibre_get_area_shape(
+            input$hydro_area,
+            dun,
+            is1_austria,
+            is2_slovakia,
+            is3_serbia,
+            is4_romania,
+            ms1_germany,
+            ms2_slovakia,
+            ms3_serbia,
+            ms4_romania,
+            ms5_romania,
+            ms6_romania
+        )
+
+        selected_shape <- sf::st_make_valid(sf::st_as_sf(selected_shape))
+        selected_point <- sf::st_sf(
+            geometry = sf::st_sfc(
+                sf::st_point(c(hydro_values_plot$lon, hydro_values_plot$lat)),
+                crs = 4326
+            )
+        )
+
+        tryCatch(
+            {
+                selected_point <- sf::st_transform(selected_point, sf::st_crs(selected_shape))
+                any(lengths(sf::st_intersects(selected_point, selected_shape)) > 0)
+            },
+            error = function(e) {
+                FALSE
+            }
+        )
+    } else {
+        NA
+    }
+    status_value <- if (is.data.frame(hydro_values_plot$input)) {
+        "Series ready"
+    } else if (is.character(hydro_values_plot$input) && length(hydro_values_plot$input) == 1) {
+        hydro_values_plot$input
+    } else {
+        "Waiting for data"
+    }
+    tip_text <- if (is_zonal) {
+        "Select the Danube basin to return to point-based inspection on the map."
+    } else {
+        "Click another map location to update the series for a new point."
+    }
+
+    info_rows <- if (is_zonal) {
+        list(
+            c("View", "Area-average series"),
+            c("Area of interest", area_label),
+            c("Parameter", data_hydro_sel()$param_name),
+            c("Season", data_hydro_sel()$season_name),
+            c("Scenario", hydro_scenario_label(input$hydro_scen)),
+            c("Metric", metric_label),
+            c("Period", period_label),
+            c("Status", status_value)
+        )
+    } else {
+        list(
+            c("View", "Point series"),
+            c("Area of interest", area_label),
+            c(
+                "Point location",
+                if (isTRUE(point_in_area)) paste("Inside", area_label) else paste("Outside", area_label)
+            ),
+            c("Selected point", selection_value),
+            c("Parameter", data_hydro_sel()$param_name),
+            c("Season", data_hydro_sel()$season_name),
+            c("Scenario", hydro_scenario_label(input$hydro_scen)),
+            c("Metric", metric_label),
+            c("Period", period_label),
+            c("Status", status_value)
+        )
+    }
+
+    shiny::tagList(
+        tags$div(
+            class = "scenario-context-section",
+            tags$div(
+                class = "scenario-context-grid",
+                lapply(info_rows, function(row) {
+                    tags$div(
+                        class = "scenario-context-row",
+                        tags$span(class = "scenario-context-label", row[[1]]),
+                        tags$span(class = "scenario-context-value", row[[2]])
+                    )
+                })
+            )
+        ),
+        tags$div(
+            class = "scenario-context-section scenario-context-note",
+            tags$div(class = "scenario-context-title", "Tip"),
+            tags$p(tip_text)
+        )
     )
 })
 
