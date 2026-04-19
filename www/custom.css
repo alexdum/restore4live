@@ -161,6 +161,12 @@ body.ui-frozen .navbar {
   color: #000;
 }
 
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 .climate-scenario-main {
   display: flex;
   flex-direction: column;
@@ -194,6 +200,12 @@ body.ui-frozen .navbar {
 .climate-scenario-stats-card {
   min-height: 0;
   min-width: 0;
+}
+
+.climate-scenario-map-card > .card-body,
+.climate-scenario-plot-card > .card-body,
+.climate-scenario-stats-card > .card-body {
+  padding: 0;
 }
 
 .climate-scenario-map-panel,
@@ -444,6 +456,57 @@ body.ui-frozen .navbar {
 /* Fix mobile layout for About section */
 /* Fix mobile layout for About section */
 @media (max-width: 991px) {
+  .climate-scenario-page,
+  .climate-observational-page {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  .climate-scenario-page .bslib-sidebar-layout > .main,
+  .climate-observational-page .bslib-sidebar-layout > .main {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden;
+  }
+
+  #scenario-raster-legend,
+  #hydro-raster-legend,
+  #ndvi-raster-legend {
+    display: none !important;
+  }
+
+  .climate-scenario-map-card {
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  .climate-scenario-map-panel {
+    height: 62vh;
+  }
+
+  .climate-scenario-chart-panel {
+    height: 28vh;
+  }
+
+  .climate-scenario-shared-title,
+  .climate-scenario-plot-slot,
+  .climate-scenario-stats-slot {
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+  }
+
+  .climate-observational-page .tab-content,
+  .climate-observational-page .tab-pane {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .climate-observational-page .obs-map-wrap {
+    width: 100%;
+    overflow: hidden;
+  }
 
   /* Force container height */
   #about {

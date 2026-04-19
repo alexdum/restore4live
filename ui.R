@@ -16,7 +16,7 @@ ui <-
     ),
     header = tagList(
       tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css?v=2.2"),
+        tags$link(rel = "stylesheet", type = "text/css", href = "custom.css?v=2.4"),
         tags$script(src = "app.js?v=1.2")
       ),
       tags$div(
