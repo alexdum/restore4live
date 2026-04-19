@@ -279,7 +279,7 @@ maplibre_update_categorical_raster <- function(
       legend_title = legend_title,
       values = legend_items$labels,
       colors = legend_items$colors,
-      position = "bottom-right",
+      position = "bottom-left",
       unique_id = legend_id
     )
 }

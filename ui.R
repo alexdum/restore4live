@@ -2,6 +2,7 @@ source("sections/ui_home.R")
 source("sections/ui_climate_scenario.R")
 source("sections/ui_area_of_interest.R")
 source("sections/ui_climate_observational.R")
+source("sections/ui_remote_sensing.R")
 ui <-
   page_navbar(
     id = "navbar",
@@ -52,39 +53,7 @@ ui <-
       title = "Remote Sensing",
       value = "remote_sensing",
       icon = icon("satellite"),
-      bslib::layout_sidebar(
-        sidebar = bslib::sidebar(
-          uiOutput("timestep_selector"),
-          sliderInput(
-            "trans_rs",
-            span(
-              "Transparency",
-              tooltip(
-                bs_icon("info-circle"),
-                "Select raster opacity"
-              )
-            ),
-            min = 0,
-            max = 1,
-            value = 0.8,
-            step = 0.1,
-            ticks = F
-          )
-        ),
-        layout_columns(
-          # col_widths = c(8, 4),
-          card( # First card for the map
-            full_screen = TRUE,
-            card_header("NDVI Map"), # Changed header
-            leafletOutput("ndvi_map")
-          ),
-          card( # Second card for the timeseries plot
-            full_screen = TRUE,
-            card_header("Timeseries Plot"),
-            highchartOutput("timeseries_plot")
-          )
-        )
-      )
+      remote_sensing_ui
     ),
     nav_panel(
       title = "AoI",

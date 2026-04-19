@@ -235,6 +235,28 @@ body.ui-frozen .navbar {
   overflow-y: auto;
 }
 
+.rs-sidebar-export {
+  margin-top: 0.75rem;
+}
+
+.rs-sidebar-export-label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+}
+
+.rs-sidebar-export-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+.rs-sidebar-export-button {
+  width: 100%;
+}
+
 .scenario-context-section + .scenario-context-section {
   margin-top: 1rem;
 }
@@ -378,9 +400,10 @@ body.ui-frozen .navbar {
 }
 
 #scenario-raster-legend,
-#hydro-raster-legend {
-  left: auto !important;
-  right: 12px !important;
+#hydro-raster-legend,
+#ndvi-raster-legend {
+  left: 12px !important;
+  right: auto !important;
   bottom: 12px !important;
   transform: none !important;
   display: block !important;
@@ -391,7 +414,8 @@ body.ui-frozen .navbar {
 }
 
 #scenario-raster-legend h2,
-#hydro-raster-legend h2 {
+#hydro-raster-legend h2,
+#ndvi-raster-legend h2 {
   width: auto;
   text-align: left;
   margin-bottom: 8px !important;
@@ -399,13 +423,15 @@ body.ui-frozen .navbar {
 }
 
 #scenario-raster-legend .legend-item,
-#hydro-raster-legend .legend-item {
+#hydro-raster-legend .legend-item,
+#ndvi-raster-legend .legend-item {
   margin: 0 !important;
   padding: 0 !important;
 }
 
 #scenario-raster-legend .legend-text,
-#hydro-raster-legend .legend-text {
+#hydro-raster-legend .legend-text,
+#ndvi-raster-legend .legend-text {
   white-space: normal;
   line-height: 1;
 }
